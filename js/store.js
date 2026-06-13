@@ -49,11 +49,12 @@
         posts: [
           {
             id: 'p1', type: 'cuento', title: 'Voló hierberito', slug: 'volo-hierberito',
-            excerpt: 'El microcuento fundacional: entre charamuscas, el ave se refugia.',
+            excerpt: 'El cuento más corto del mundo.',
             visibility: 'public', published: true, cover_url: 'assets/img/card-nido.webp', video_url: '', expires_at: null,
             content_json: { blocks: [
               { type: 'paragraph', data: { text: 'Voló hierberito. Entre charamuscas se refugió.' } },
-              { type: 'paragraph', data: { text: 'Las charamuscas son pajitas secas, hierba endeble. Y son, también, la barrera invisible que ampara al niño frente a la incomprensión — hasta el día en que llega un maestro capaz de valorar su voz.' } }
+              { type: 'paragraph', data: { text: 'Las charamuscas son pajitas secas, hierba endeble. Y son, también, la barrera invisible que ampara al niño frente a la incomprensión — hasta el día en que llega un maestro capaz de valorar su voz.' } },
+              { type: 'paragraph', data: { text: '— Raquel Sofía Díaz' } }
             ] },
             created_at: '2026-06-08'
           },
