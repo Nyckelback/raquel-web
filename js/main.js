@@ -69,7 +69,7 @@ function initAsesoriaForm(){
     let txt = `Hola Raquel, soy ${nombre || '(nombre)'}. Me interesa: ${tipo || 'una asesoría'}.`;
     if (mensaje) txt += ` ${mensaje}`;
     const msg = document.getElementById('formMsg');
-    if (msg) { msg.textContent = '¡Gracias! Te llevamos a WhatsApp para terminar de enviarlo. 🌿'; msg.className = 'msg ok'; }
+    if (msg) { msg.textContent = '¡Gracias! Te llevamos a WhatsApp para terminar de enviarlo.'; msg.className = 'msg ok'; msg.style.display = 'block'; }
     window.open('https://wa.me/573148448163?text=' + encodeURIComponent(txt), '_blank', 'noopener');
     form.reset();
   });
