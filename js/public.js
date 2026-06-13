@@ -61,7 +61,8 @@
   }
   function resItem(r) {
     const tag = r.visibility === 'privado' ? 'Para ti' : esc(r.category || 'Recurso');
-    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${tag}</span><a class="btn btn-light" href="#" data-res="${r.id}">Descargar</a></div>`;
+    const btn = r.file_type === 'link' ? 'Abrir' : 'Descargar';
+    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${tag}</span><a class="btn btn-light" href="#" data-res="${r.id}">${btn}</a></div>`;
   }
 
   const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;

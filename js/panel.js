@@ -206,6 +206,7 @@
           </select></div>
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
+        <div class="field"><label class="lab">…o pega un link de Google Drive / web (en vez de subir el archivo — no gasta espacio)</label><input id="resLink" type="url" placeholder="https://drive.google.com/..."></div>
         <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién se lo asignas?</label><select id="resPerson"></select></div>
         <div class="field"><label class="lab">¿Temporal? Vence el (opcional · déjalo vacío si es permanente)</label><input id="resExp" type="date"></div>
         <div class="inline">
@@ -232,13 +233,13 @@
     });
     list.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if (confirm('¿Eliminar este recurso?')) { await Store.resources.remove(b.dataset.del); renderRecursos(); } });
     $('#resSave').onclick = async () => {
-      const title = $('#resTitle').value.trim(); const file = $('#resFile').files[0];
+      const title = $('#resTitle').value.trim(); const file = $('#resFile').files[0]; const link = $('#resLink').value.trim();
       if (!title) return alert('Ponle un título.');
-      if (!file) return alert('Elige un archivo.');
-      const maxB = (CFG.MAX_FILE_MB || 25) * 1048576;
-      if (file.size > maxB) return alert('El archivo supera el límite de ' + (CFG.MAX_FILE_MB || 25) + ' MB.');
+      if (!file && !link) return alert('Sube un archivo o pega un link de Google Drive / web.');
+      if (file) { const maxB = (CFG.MAX_FILE_MB || 25) * 1048576; if (file.size > maxB) return alert('El archivo supera el límite de ' + (CFG.MAX_FILE_MB || 25) + ' MB. Para archivos grandes, mejor pega un link de Google Drive.'); }
       const vis = $('#resVis').value;
       const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: vis, expires_at: $('#resExp').value || null };
+      if (link) { meta.link_url = link; meta.file_url = link; meta.file_name = 'Enlace externo'; meta.file_type = 'link'; meta.file_size = 0; }
       if (vis === 'privado') {
         const pid = $('#resPerson').value;
         if (!pid) return alert('Elige a la persona para esta asesoría.');
