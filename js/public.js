@@ -63,19 +63,21 @@
     return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${esc(r.category || 'Recurso')}</span><a class="btn btn-light" href="#" data-res="${r.id}">Descargar</a></div>`;
   }
 
+  const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;
+
   async function mountCuentos(box) {
     await Store.ready;
     const posts = await Store.posts.list({ publishedOnly: true });
-    const pub = posts.filter(p => p.visibility !== 'members');
-    const mem = posts.filter(p => p.visibility === 'members');
+    const pub = posts.filter(p => !p.visibility || p.visibility === 'public');
+    const restricted = posts.filter(p => p.visibility && p.visibility !== 'public');
+    const visible = restricted.filter(p => Store.canSee(p.visibility));
     const u = Store.auth.user();
     let html = '';
     html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
-    if (mem.length) {
+    if (restricted.length) {
       html += head(`Solo para miembros ${LOCKSM}`);
-      html += Store.canSee('members')
-        ? `<div class="post-grid">${mem.map(postCard).join('')}</div>`
-        : gate(u ? 'Tu acceso está pendiente de aprobación por Raquel.' : 'Inicia sesión (y pide acceso) para leer las publicaciones exclusivas.');
+      if (visible.length) html += `<div class="post-grid">${visible.map(postCard).join('')}</div>`;
+      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para leer las publicaciones exclusivas.'));
     }
     box.innerHTML = html;
   }
@@ -83,18 +85,26 @@
   async function mountResources(box) {
     await Store.ready;
     const res = await Store.resources.list();
-    const pub = res.filter(r => r.visibility !== 'members');
-    const mem = res.filter(r => r.visibility === 'members');
+    const pub = res.filter(r => !r.visibility || r.visibility === 'public');
+    const restricted = res.filter(r => r.visibility && r.visibility !== 'public');
+    const visible = restricted.filter(r => Store.canSee(r.visibility));
     const u = Store.auth.user();
     let html = '';
     if (pub.length) html += head('Más recursos públicos') + `<div class="downloads">${pub.map(resItem).join('')}</div>`;
-    if (mem.length) {
+    if (restricted.length) {
       html += head(`Solo para miembros ${LOCKSM}`);
-      html += Store.canSee('members')
-        ? `<div class="downloads">${mem.map(resItem).join('')}</div>`
-        : gate(u ? 'Tu acceso está pendiente de aprobación por Raquel.' : 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.');
+      if (visible.length) html += `<div class="downloads">${visible.map(resItem).join('')}</div>`;
+      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.'));
     }
     box.innerHTML = html;
+    box.querySelectorAll('[data-res]').forEach(a => a.onclick = async (e) => {
+      e.preventDefault();
+      const r = res.find(x => x.id === a.dataset.res);
+      const url = r && await Store.resources.url(r);
+      if (!url) { alert('Archivo no disponible.'); return; }
+      const l = document.createElement('a'); l.href = url; if (r.file_name) l.download = r.file_name; l.target = '_blank';
+      document.body.appendChild(l); l.click(); l.remove();
+    });
     box.querySelectorAll('[data-res]').forEach(a => a.onclick = async (e) => {
       e.preventDefault();
       const r = res.find(x => x.id === a.dataset.res);

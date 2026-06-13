@@ -286,10 +286,10 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .demo-tip{background:#FBF0DF;border:1px solid #F2DDB8;color:#7A5A2C;font-size:.8rem;padding:10px 14px;border-radius:10px;margin-top:16px}
 
 /* ---------- Publicaciones dinámicas ---------- */
-.post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;justify-content:start}
 .post-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform .2s,box-shadow .2s;color:inherit}
 .post-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.post-card .ph{height:160px;background:var(--acc-cuentos);background-size:cover;background-position:center}
+.post-card .ph{aspect-ratio:3/2;background:var(--acc-cuentos);background-size:cover;background-position:center}
 .post-card .pb{padding:18px 20px;flex:1;display:flex;flex-direction:column}
 .post-card h3{font-size:1.2rem;margin-bottom:6px}
 .post-card p{font-size:.9rem;color:var(--text);flex:1}
@@ -301,6 +301,20 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .prose ul,.prose ol{margin:0 0 1.2em 1.3em}
 .prose blockquote{border-left:3px solid var(--secondary);padding-left:16px;margin:1.2em 0;font-style:italic;color:var(--eyebrow)}
 .cover-hero{width:100%;max-height:400px;object-fit:cover;border-radius:18px;margin-bottom:18px}
+
+/* ---------- Fotos de perfil ---------- */
+.pavatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--chip);flex-shrink:0}
+.acct-ava{overflow:hidden}
+.acct-ava img,.cuenta-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.cuenta-ava{width:104px;height:104px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:2.2rem;overflow:hidden;margin:0 auto 16px}
+.feature.portrait img{aspect-ratio:4/5}
+
+/* ---------- Panel: búsqueda y filtros ---------- */
+.pfilters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.pchip{border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.82rem;padding:7px 14px;border-radius:30px;cursor:pointer}
+.pchip:hover{border-color:var(--secondary)}
+.pchip.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.tipo-badge{font-size:.7rem;color:var(--eyebrow);background:var(--chip);padding:3px 9px;border-radius:20px;white-space:nowrap}
 
 /* ---------- Responsive ---------- */
 @media(max-width:860px){

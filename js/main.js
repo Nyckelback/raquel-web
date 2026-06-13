@@ -85,9 +85,11 @@ async function initAccount(){
     const ini = (u.full_name || u.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
     const st = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? 'Miembro' : 'Pendiente de aprobación');
     const panel = u.role === 'admin' ? '<a href="panel.html"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Panel</a>' : '';
-    slot.innerHTML = `<button class="acct-btn" id="acctBtn" aria-label="Mi cuenta"><span class="acct-ava">${ini}</span></button>
+    const ava = u.avatar_url ? `<img src="${u.avatar_url}" alt="">` : ini;
+    slot.innerHTML = `<button class="acct-btn" id="acctBtn" aria-label="Mi cuenta"><span class="acct-ava">${ava}</span></button>
       <div class="acct-menu" id="acctMenu">
         <div class="who"><strong>${u.full_name || u.email}</strong><span>${st}</span></div>
+        <a href="cuenta.html"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5"/></svg>Mi cuenta</a>
         ${panel}
         <button id="acctOut"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</button>
       </div>`;

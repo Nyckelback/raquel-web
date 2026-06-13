@@ -18,9 +18,16 @@
 
   /* ---------------- helper de visibilidad ---------------- */
   function canSee(visibility) {
+    const u = currentUser;
     if (visibility === 'public' || !visibility) return true;
-    if (visibility === 'members') return !!currentUser && (currentUser.role === 'admin' || (currentUser.role === 'member' && currentUser.status === 'approved'));
-    return currentUser && currentUser.role === 'admin';
+    if (!u) return false;
+    if (u.role === 'admin') return true;
+    const approved = u.role === 'member' && u.status === 'approved';
+    if (!approved) return false;
+    if (visibility === 'members') return true;
+    if (visibility === 'docentes') return u.tipo === 'docente';
+    if (visibility === 'estudiantes') return u.tipo === 'estudiante';
+    return false;
   }
   const isAdmin = () => currentUser && currentUser.role === 'admin';
 
@@ -34,8 +41,9 @@
     function seed() {
       return {
         profiles: [
-          { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved', created_at: '2026-06-01' },
-          { id: 'stu-1', email: 'marta.docente@correo.com', full_name: 'Marta — docente', role: 'member', status: 'pending', created_at: '2026-06-10' }
+          { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '', created_at: '2026-06-01' },
+          { id: 'stu-1', email: 'marta.docente@correo.com', full_name: 'Marta Pérez', role: 'member', status: 'pending', tipo: 'docente', avatar_url: '', created_at: '2026-06-10' },
+          { id: 'stu-2', email: 'juan.estudiante@correo.com', full_name: 'Juan Estudiante', role: 'member', status: 'approved', tipo: 'estudiante', avatar_url: '', created_at: '2026-06-11' }
         ],
         posts: [
           {
@@ -97,18 +105,19 @@
         if (!p) return { error: 'No encontramos esa cuenta (en demo: usa raquel@elnido.com o regístrate).' };
         currentUser = { ...p }; localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify(); return {};
       },
-      async signUp(email, pw, name) {
+      async signUp(email, pw, name, tipo) {
         const d = db();
         if (d.profiles.find(x => x.email.toLowerCase() === (email || '').toLowerCase())) return { error: 'Ese correo ya está registrado.' };
-        const p = { id: uid(), email, full_name: name || email, role: 'member', status: 'pending', created_at: new Date().toISOString().slice(0, 10) };
-        d.profiles.push(p); write(d);
+        const p = { id: uid(), email, full_name: name || email, role: 'member', status: 'pending', tipo: tipo || 'otro', avatar_url: '', created_at: new Date().toISOString().slice(0, 10) };
+        d.profiles.push(p);
+        try { write(d); } catch (e) { return { error: 'No se pudo crear la cuenta (espacio del navegador).' }; }
         currentUser = { ...p }; localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify();
         return { pending: true };
       },
       async demoLogin(role) {
         currentUser = role === 'admin'
-          ? { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved' }
-          : { id: 'stu-demo', email: 'estudiante@demo.com', full_name: 'Estudiante demo', role: 'member', status: 'approved' };
+          ? { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '' }
+          : { id: 'stu-demo', email: 'estudiante@demo.com', full_name: 'Estudiante demo', role: 'member', status: 'approved', tipo: 'estudiante', avatar_url: '' };
         localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify(); return {};
       },
       async signOut() { currentUser = null; localStorage.removeItem(SESSION_KEY); notify(); },
@@ -154,11 +163,27 @@
         try { write(d); } catch (e) {}
         if (p && currentUser && currentUser.id === id) { currentUser = { ...p }; notify(); }  // refresca su propia sesión
       },
+      async setStudentTipo(id, tipo) {
+        const d = db(); const p = d.profiles.find(x => x.id === id); if (p) p.tipo = tipo;
+        try { write(d); } catch (e) {}
+        if (p && currentUser && currentUser.id === id) { currentUser.tipo = tipo; notify(); }
+      },
+      async updateMe(patch) {
+        if (!currentUser) return { error: 'Sin sesión.' };
+        const d = db(); const me = d.profiles.find(p => p.id === currentUser.id);
+        const allowed = {}; ['full_name', 'avatar_url', 'tipo'].forEach(k => { if (patch[k] !== undefined) allowed[k] = patch[k]; });
+        if (me) Object.assign(me, allowed);
+        try { write(d); } catch (e) { return { error: 'No se pudo guardar (espacio del navegador).' }; }
+        Object.assign(currentUser, allowed); localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify();
+        return currentUser;
+      },
+      async getAdmin() { const a = db().profiles.find(p => p.role === 'admin'); return a ? { full_name: a.full_name, avatar_url: a.avatar_url } : null; },
 
       async createLead(lead) { const d = db(); lead.id = uid(); lead.created_at = new Date().toISOString(); d.leads.unshift(lead); try { write(d); } catch (e) {} return lead; },
       async listLeads() { return db().leads.slice(); },
 
-      async uploadImage(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } }
+      async uploadImage(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } },
+      async uploadAvatar(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } }
     };
   })();
 
@@ -176,8 +201,8 @@
     async function loadProfile(user) {
       if (!user) return null;
       const s = await client();
-      const { data } = await s.from('profiles').select('*').eq('id', user.id).single();
-      return { id: user.id, email: user.email, full_name: (data && data.full_name) || user.email, role: (data && data.role) || 'member', status: (data && data.status) || 'pending' };
+      const { data } = await s.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      return { id: user.id, email: user.email, full_name: (data && data.full_name) || user.email, role: (data && data.role) || 'member', status: (data && data.status) || 'pending', tipo: (data && data.tipo) || 'otro', avatar_url: (data && data.avatar_url) || '' };
     }
     return {
       async init() {
@@ -192,9 +217,9 @@
         if (error) return { error: /not confirmed/i.test(error.message) ? 'Debes confirmar tu correo antes de entrar. Revisa tu bandeja.' : error.message };
         const { data } = await s.auth.getUser(); currentUser = await loadProfile(data.user); return {};
       },
-      async signUp(email, pw, name) {
+      async signUp(email, pw, name, tipo) {
         const s = await client();
-        const { data, error } = await s.auth.signUp({ email, password: pw, options: { data: { full_name: name }, emailRedirectTo: cfg.SITE_URL } });
+        const { data, error } = await s.auth.signUp({ email, password: pw, options: { data: { full_name: name, tipo: tipo || 'otro' }, emailRedirectTo: cfg.SITE_URL } });
         if (error) return { error: error.message };
         if (data && data.user && data.user.identities && data.user.identities.length === 0) return { error: 'Ese correo ya está registrado.' };
         return { pending: true, needsConfirm: !(data && data.session) };
@@ -254,6 +279,17 @@
 
       async listStudents() { const s = await client(); const { data } = await s.from('profiles').select('*').neq('role', 'admin'); return data || []; },
       async setStudentStatus(id, status) { const s = await client(); const patch = { status }; if (status === 'approved') patch.role = 'member'; await s.from('profiles').update(patch).eq('id', id); },
+      async setStudentTipo(id, tipo) { const s = await client(); await s.from('profiles').update({ tipo }).eq('id', id); },
+      async updateMe(patch) {
+        const s = await client();
+        const { data: { user } } = await s.auth.getUser();
+        if (!user) return { error: 'Sin sesión.' };
+        const allowed = {}; ['full_name', 'avatar_url', 'tipo'].forEach(k => { if (patch[k] !== undefined) allowed[k] = patch[k]; });
+        const { error } = await s.from('profiles').update(allowed).eq('id', user.id);
+        if (error) return { error: error.message };
+        currentUser = await loadProfile(user); notify(); return currentUser;
+      },
+      async getAdmin() { const s = await client(); const { data } = await s.from('profiles').select('full_name,avatar_url').eq('role', 'admin').limit(1).maybeSingle(); return data || null; },
 
       async createLead(lead) { const s = await client(); const { data } = await s.from('leads').insert(lead).select().single(); return data; },
       async listLeads() { const s = await client(); const { data } = await s.from('leads').select('*').order('created_at', { ascending: false }); return data || []; },
@@ -261,6 +297,13 @@
       async uploadImage(file) {
         const s = await client();
         const path = 'img/' + uid() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+        const up = await s.storage.from('public').upload(path, file, { upsert: false });
+        if (up.error) return { error: up.error.message };
+        return { url: s.storage.from('public').getPublicUrl(path).data.publicUrl };
+      },
+      async uploadAvatar(file) {
+        const s = await client();
+        const path = 'avatars/' + uid() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
         const up = await s.storage.from('public').upload(path, file, { upsert: false });
         if (up.error) return { error: up.error.message };
         return { url: s.storage.from('public').getPublicUrl(path).data.publicUrl };
@@ -284,9 +327,13 @@
       user: () => currentUser,
       onChange: (cb) => { listeners.push(cb); return () => { const i = listeners.indexOf(cb); if (i >= 0) listeners.splice(i, 1); }; },
       signIn: (e, p) => A.signIn(e, p),
-      signUp: (e, p, n) => A.signUp(e, p, n),
+      signUp: (e, p, n, tipo) => A.signUp(e, p, n, tipo),
       demoLogin: (r) => A.demoLogin(r),
       signOut: () => A.signOut()
+    },
+    profile: {
+      updateMe: (patch) => A.updateMe(patch),
+      getAdmin: () => A.getAdmin()
     },
     posts: {
       list: (o) => A.listPosts(o),
@@ -300,8 +347,9 @@
       remove: (id) => A.removeResource(id),
       url: (r) => A.resourceUrl(r)
     },
-    students: { list: () => A.listStudents(), setStatus: (id, s) => A.setStudentStatus(id, s) },
+    students: { list: () => A.listStudents(), setStatus: (id, s) => A.setStudentStatus(id, s), setTipo: (id, t) => A.setStudentTipo(id, t) },
     leads: { create: (l) => A.createLead(l), list: () => A.listLeads() },
-    uploadImage: (f) => A.uploadImage(f)
+    uploadImage: (f) => A.uploadImage(f),
+    uploadAvatar: (f) => A.uploadAvatar(f)
   };
 })();

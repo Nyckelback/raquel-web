@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi cuenta · El Nido</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="cuenta">
+  <div data-include="partials/header.html"></div>
+
+  <section class="section">
+    <div class="container auth-wrap">
+      <div style="text-align:center;margin-bottom:24px">
+        <h1 style="font-size:1.9rem">Mi cuenta</h1>
+        <p class="note">Tu foto ayuda a que Raquel te reconozca más fácil.</p>
+      </div>
+      <div class="auth-card">
+        <div id="msg" class="msg" style="display:none"></div>
+        <div class="cuenta-ava" id="ava">··</div>
+        <div style="text-align:center;margin-bottom:18px">
+          <label class="btn btn-light" style="cursor:pointer">Cambiar foto<input id="foto" type="file" accept="image/*" hidden></label>
+        </div>
+        <div class="field"><label for="nombre">Tu nombre</label><input id="nombre" type="text" placeholder="Nombre y apellido"></div>
+        <div class="field"><label for="tipo">¿Quién eres?</label><select id="tipo"><option value="docente">Docente</option><option value="estudiante">Estudiante</option><option value="familia">Familia / acudiente</option><option value="otro">Otro</option></select></div>
+        <div class="field"><label>Estado de tu acceso</label><div id="estado" class="note"></div></div>
+        <button class="btn btn-primary" id="guardar" style="width:100%;justify-content:center">Guardar</button>
+      </div>
+    </div>
+  </section>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    (async () => {
+      await Store.ready;
+      const $ = (id) => document.getElementById(id);
+      let u = Store.auth.user();
+      if (!u) { location.href = 'entrar.html'; return; }
+      let avatarUrl = u.avatar_url || '';
+      const ini = (u.full_name || u.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+      const paint = () => { $('ava').innerHTML = avatarUrl ? `<img src="${avatarUrl}" alt="">` : ini; };
+      paint();
+      $('nombre').value = u.full_name || '';
+      $('tipo').value = u.tipo || 'otro';
+      $('estado').textContent = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? '✓ Aprobado: ves el contenido para miembros.' : 'Pendiente: Raquel revisará tu acceso pronto.');
+
+      async function shrink(file) {
+        try {
+          const img = await createImageBitmap(file);
+          const max = 480, scale = Math.min(1, max / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          const blob = await new Promise(r => c.toBlob(r, 'image/webp', 0.85));
+          return new File([blob], 'avatar.webp', { type: 'image/webp' });
+        } catch (e) { return file; }
+      }
+      $('foto').onchange = async (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        const r = await Store.uploadAvatar(await shrink(f));
+        if (!r || r.error || !r.url) { $('msg').textContent = 'No se pudo subir la foto.'; $('msg').className = 'msg err'; $('msg').style.display = 'block'; return; }
+        avatarUrl = r.url; paint();
+      };
+      $('guardar').onclick = async () => {
+        $('guardar').disabled = true;
+        const r = await Store.profile.updateMe({ full_name: $('nombre').value.trim(), tipo: $('tipo').value, avatar_url: avatarUrl });
+        $('guardar').disabled = false;
+        if (r && r.error) { $('msg').textContent = r.error; $('msg').className = 'msg err'; $('msg').style.display = 'block'; return; }
+        $('msg').textContent = '¡Listo! Tu perfil quedó guardado.'; $('msg').className = 'msg ok'; $('msg').style.display = 'block';
+      };
+    })();
+  </script>
+</body>
+</html>

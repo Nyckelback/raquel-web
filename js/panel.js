@@ -18,7 +18,7 @@
   $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = 'index.html'; };
 
   /* ---- navegación entre secciones ---- */
-  const segs = { resumen: renderResumen, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
+  const segs = { resumen: renderResumen, perfil: renderPerfil, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
   function switchSeg(name) {
     destroyEditor();
     document.querySelectorAll('.pside a').forEach(a => a.classList.toggle('active', a.dataset.seg === name));
@@ -63,6 +63,36 @@
       ${Store.mode === 'demo' ? '<div class="demo-tip" style="margin-top:22px">Estás en <strong>modo demo</strong>: lo que subas se guarda solo en este navegador. Cuando conectemos Supabase, será permanente y visible para todos.</div>' : ''}`;
     $('#qPost').onclick = () => { switchSeg('posts'); setTimeout(() => openEditor(null), 50); };
     $('#qRes').onclick = () => { switchSeg('recursos'); setTimeout(() => $('#resTitle') && $('#resTitle').focus(), 50); };
+  }
+
+  /* ============================ MI PERFIL ============================ */
+  async function renderPerfil() {
+    const seg = $('#seg-perfil');
+    const u = Store.auth.user();
+    let avatarUrl = u.avatar_url || '';
+    const ini = (u.full_name || u.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    seg.innerHTML = `
+      <div class="phead"><div><h1>Mi perfil</h1><p class="note">Tu foto y tu nombre aparecen en la página “Quién soy”.</p></div></div>
+      <div class="editor-box" style="max-width:460px">
+        <div class="cuenta-ava" id="pfAva">${ini}</div>
+        <div style="text-align:center;margin-bottom:18px"><label class="btn btn-light" style="cursor:pointer">Cambiar foto<input id="pfFoto" type="file" accept="image/*" hidden></label></div>
+        <div class="field"><label class="lab">Tu nombre</label><input id="pfNombre" type="text" value="${esc(u.full_name || '')}"></div>
+        <div class="inline"><button class="btn btn-primary" id="pfSave">Guardar</button><span id="pfMsg" class="note"></span></div>
+      </div>`;
+    const paint = () => { $('#pfAva').innerHTML = avatarUrl ? `<img src="${esc(avatarUrl)}" alt="">` : ini; };
+    paint();
+    $('#pfFoto').onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = await Store.uploadAvatar(await optimizeImage(f));
+      if (!r || r.error || !r.url) { alert('No se pudo subir la foto: ' + ((r && r.error) || 'error')); return; }
+      avatarUrl = r.url; paint();
+    };
+    $('#pfSave').onclick = async () => {
+      $('#pfSave').disabled = true;
+      const r = await Store.profile.updateMe({ full_name: $('#pfNombre').value.trim(), avatar_url: avatarUrl });
+      $('#pfSave').disabled = false;
+      $('#pfMsg').textContent = (r && r.error) ? ('Error: ' + r.error) : '¡Guardado!';
+    };
   }
 
   /* ============================ POSTS ============================ */
@@ -111,7 +141,12 @@
         <div class="field"><label class="lab">Título</label><input id="fTitle" type="text" value="${esc(p.title || '')}" placeholder="El título de tu cuento o artículo"></div>
         <div class="grid2">
           <div class="field"><label class="lab">Tipo</label><select id="fType"><option value="cuento"${p.type === 'cuento' ? ' selected' : ''}>Cuento / lírica</option><option value="articulo"${p.type === 'articulo' ? ' selected' : ''}>Artículo</option></select></div>
-          <div class="field"><label class="lab">¿Quién lo ve?</label><select id="fVis"><option value="public"${p.visibility === 'public' ? ' selected' : ''}>Público (todos)</option><option value="members"${p.visibility === 'members' ? ' selected' : ''}>Solo miembros</option></select></div>
+          <div class="field"><label class="lab">¿Quién lo ve?</label><select id="fVis">
+            <option value="public"${p.visibility === 'public' ? ' selected' : ''}>Público (todos)</option>
+            <option value="members"${p.visibility === 'members' ? ' selected' : ''}>Todos los miembros</option>
+            <option value="docentes"${p.visibility === 'docentes' ? ' selected' : ''}>Solo docentes</option>
+            <option value="estudiantes"${p.visibility === 'estudiantes' ? ' selected' : ''}>Solo estudiantes</option>
+          </select></div>
         </div>
         <div class="field"><label class="lab">Resumen corto (aparece en la lista)</label><input id="fExc" type="text" value="${esc(p.excerpt || '')}" placeholder="Una frase que invite a leer"></div>
         <div class="grid2">
@@ -161,7 +196,12 @@
         </div>
         <div class="field"><label class="lab">Descripción corta</label><input id="resDesc" type="text" placeholder="¿De qué trata?"></div>
         <div class="grid2">
-          <div class="field"><label class="lab">¿Quién lo descarga?</label><select id="resVis"><option value="public">Público (todos)</option><option value="members">Solo miembros</option></select></div>
+          <div class="field"><label class="lab">¿Quién lo descarga?</label><select id="resVis">
+            <option value="public">Público (todos)</option>
+            <option value="members">Todos los miembros</option>
+            <option value="docentes">Solo docentes</option>
+            <option value="estudiantes">Solo estudiantes</option>
+          </select></div>
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
         <div class="inline">
@@ -201,18 +241,47 @@
   async function renderEstudiantes() {
     const seg = $('#seg-estudiantes');
     const studs = await Store.students.list();
-    seg.innerHTML = `<div class="phead"><div><h1>Estudiantes y docentes</h1><p class="note">Aprueba quién puede ver el contenido para miembros.</p></div></div><div id="stuList"></div>`;
-    const list = $('#stuList');
-    if (!studs.length) list.innerHTML = '<p class="note">Nadie se ha registrado todavía.</p>';
-    studs.forEach(s => {
-      const row = document.createElement('div'); row.className = 'prow';
-      const approved = s.status === 'approved';
-      row.innerHTML = `<div class="grow"><strong>${esc(s.full_name || s.email)}</strong><small>${esc(s.email)} · ${approved ? 'Aprobado' : 'Pendiente'}</small></div>
-        ${approved ? `<button class="iconbtn" data-rev="${s.id}">Quitar acceso</button>` : `<button class="iconbtn" data-app="${s.id}" style="border-color:var(--secondary);color:var(--primary)">Aprobar</button>`}`;
-      list.appendChild(row);
-    });
-    list.querySelectorAll('[data-app]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.app, 'approved'); renderEstudiantes(); });
-    list.querySelectorAll('[data-rev]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.rev, 'pending'); renderEstudiantes(); });
+    seg.innerHTML = `
+      <div class="phead"><div><h1>Personas</h1><p class="note">Aprueba accesos y organiza por tipo. Busca por nombre o correo.</p></div></div>
+      <input id="stuSearch" class="psearch" type="search" placeholder="Buscar por nombre o correo…" style="width:100%;max-width:360px;margin-bottom:14px">
+      <div class="pfilters" id="stuFilters">
+        <button class="pchip active" data-f="all">Todos</button>
+        <button class="pchip" data-f="docente">Docentes</button>
+        <button class="pchip" data-f="estudiante">Estudiantes</button>
+        <button class="pchip" data-f="familia">Familias</button>
+        <button class="pchip" data-f="pending">Pendientes</button>
+      </div>
+      <div id="stuList"></div>`;
+    let filter = 'all', q = '';
+    function draw() {
+      const list = $('#stuList');
+      const rows = studs
+        .filter(s => filter === 'pending' ? s.status !== 'approved' : (filter === 'all' ? true : s.tipo === filter))
+        .filter(s => (s.full_name || '').toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
+      if (!rows.length) { list.innerHTML = '<p class="note">Nadie coincide con la búsqueda.</p>'; return; }
+      list.innerHTML = '';
+      rows.forEach(s => {
+        const approved = s.status === 'approved';
+        const ini = (s.full_name || s.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        const ava = s.avatar_url ? `<img class="pavatar" src="${esc(s.avatar_url)}" alt="">` : `<div class="pavatar" style="display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--ink)">${ini}</div>`;
+        const row = document.createElement('div'); row.className = 'prow';
+        row.innerHTML = `${ava}<div class="grow"><strong>${esc(s.full_name || s.email)}</strong><small>${esc(s.email)} · ${approved ? 'Aprobado' : 'Pendiente'}</small></div>
+          <select class="iconbtn" data-tipo="${s.id}" title="Tipo">
+            <option value="docente"${s.tipo === 'docente' ? ' selected' : ''}>Docente</option>
+            <option value="estudiante"${s.tipo === 'estudiante' ? ' selected' : ''}>Estudiante</option>
+            <option value="familia"${s.tipo === 'familia' ? ' selected' : ''}>Familia</option>
+            <option value="otro"${(!s.tipo || s.tipo === 'otro') ? ' selected' : ''}>Otro</option>
+          </select>
+          ${approved ? `<button class="iconbtn" data-rev="${s.id}">Quitar acceso</button>` : `<button class="iconbtn" data-app="${s.id}" style="border-color:var(--secondary);color:var(--primary)">Aprobar</button>`}`;
+        list.appendChild(row);
+      });
+      list.querySelectorAll('[data-app]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.app, 'approved'); const x = studs.find(p => p.id === b.dataset.app); if (x) { x.status = 'approved'; x.role = 'member'; } draw(); });
+      list.querySelectorAll('[data-rev]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.rev, 'pending'); const x = studs.find(p => p.id === b.dataset.rev); if (x) x.status = 'pending'; draw(); });
+      list.querySelectorAll('[data-tipo]').forEach(sel => sel.onchange = async () => { await Store.students.setTipo(sel.dataset.tipo, sel.value); const x = studs.find(p => p.id === sel.dataset.tipo); if (x) x.tipo = sel.value; });
+    }
+    $('#stuSearch').oninput = (e) => { q = e.target.value.toLowerCase().trim(); draw(); };
+    $('#stuFilters').querySelectorAll('.pchip').forEach(c => c.onclick = () => { $('#stuFilters').querySelectorAll('.pchip').forEach(x => x.classList.remove('active')); c.classList.add('active'); filter = c.dataset.f; draw(); });
+    draw();
   }
 
   /* ============================ MENSAJES ============================ */

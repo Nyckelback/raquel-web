@@ -38,6 +38,7 @@
 
         <form id="signupForm" style="display:none">
           <div class="field"><label for="sn">Tu nombre</label><input id="sn" name="name" type="text" required placeholder="Nombre y apellido"></div>
+          <div class="field"><label for="st">¿Quién eres?</label><select id="st" name="tipo"><option value="docente">Docente</option><option value="estudiante">Estudiante</option><option value="familia">Familia / acudiente</option><option value="otro">Otro</option></select></div>
           <div class="field"><label for="se">Correo</label><input id="se" name="email" type="email" required placeholder="tucorreo@ejemplo.com"></div>
           <div class="field"><label for="sp">Crea una contraseña</label><input id="sp" name="password" type="password" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
           <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">Crear cuenta</button>
@@ -81,7 +82,7 @@
 
       $('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const r = await Store.auth.signUp($('se').value.trim(), $('sp').value, $('sn').value.trim());
+        const r = await Store.auth.signUp($('se').value.trim(), $('sp').value, $('sn').value.trim(), $('st').value);
         if (r.error) return show(r.error, 'err');
         if (r.needsConfirm) { show('¡Cuenta creada! Revisa tu correo y confirma tu cuenta para poder entrar. Luego Raquel aprobará tu acceso al contenido para miembros.', 'ok'); return; }
         show('¡Cuenta creada! Ya puedes ver todo lo público. Raquel aprobará tu acceso al contenido para miembros.', 'ok');

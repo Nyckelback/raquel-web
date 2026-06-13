@@ -11,6 +11,8 @@ create table if not exists public.profiles (
   full_name text,
   role text not null default 'member',     -- 'admin' | 'member'
   status text not null default 'pending',   -- 'approved' | 'pending'
+  tipo text not null default 'otro',        -- 'docente' | 'estudiante' | 'familia' | 'otro'
+  avatar_url text,
   created_at timestamptz default now()
 );
 
@@ -18,8 +20,8 @@ create table if not exists public.profiles (
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
 begin
-  insert into public.profiles (id, email, full_name, role, status)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', new.email), 'member', 'pending')
+  insert into public.profiles (id, email, full_name, role, status, tipo)
+  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', new.email), 'member', 'pending', coalesce(new.raw_user_meta_data->>'tipo', 'otro'))
   on conflict (id) do nothing;
   return new;
 end; $$;
@@ -97,6 +99,24 @@ create policy p_profiles_self on public.profiles for select using (auth.uid() = 
 -- o un miembro podría auto-promoverse a admin. Cambiar el nombre se hace por el panel de admin.
 drop policy if exists p_profiles_admin_upd on public.profiles;
 create policy p_profiles_admin_upd on public.profiles for update using (public.is_admin()) with check (public.is_admin());
+
+-- Cada usuario edita SU perfil (nombre, foto, tipo). El trigger de abajo congela role/status
+-- para no-admin, así que esta política NO permite auto-promoverse a admin.
+drop policy if exists p_profiles_self_upd on public.profiles;
+create policy p_profiles_self_upd on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
+
+create or replace function public.freeze_privileged_fields()
+returns trigger language plpgsql security definer as $$
+begin
+  if not public.is_admin() then
+    new.role := old.role;       -- un no-admin nunca cambia su rol
+    new.status := old.status;   -- ni su estado de aprobación
+  end if;
+  return new;
+end; $$;
+drop trigger if exists trg_freeze_profile on public.profiles;
+create trigger trg_freeze_profile before update on public.profiles
+  for each row execute function public.freeze_privileged_fields();
 
 -- Posts: público ve lo publicado público; miembros ven los de miembros; admin todo
 drop policy if exists p_posts_read on public.posts;
