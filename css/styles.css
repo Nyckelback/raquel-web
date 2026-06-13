@@ -244,6 +244,55 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .wa-float:hover{transform:scale(1.08)}
 .wa-float svg{width:30px;height:30px}
 
+/* ---------- Cuenta / login ---------- */
+.acct{position:relative;display:flex;align-items:center}
+.acct-link{font-size:.92rem;color:var(--text);cursor:pointer;padding:6px 4px}
+.acct-link:hover{color:var(--primary)}
+.acct-btn{background:none;border:none;font-family:inherit;font-size:.92rem;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:5px 8px;border-radius:9px}
+.acct-btn:hover{background:var(--chip)}
+.acct-ava{width:30px;height:30px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-size:.78rem}
+.acct-menu{position:absolute;right:0;top:48px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);min-width:190px;padding:8px;display:none;z-index:60}
+.acct-menu.open{display:block}
+.acct-menu a,.acct-menu button{display:flex;width:100%;text-align:left;gap:9px;align-items:center;background:none;border:none;font-family:inherit;font-size:.9rem;color:var(--text);padding:9px 10px;border-radius:8px;cursor:pointer}
+.acct-menu a:hover,.acct-menu button:hover{background:var(--cream);color:var(--primary)}
+.acct-menu .who{padding:4px 10px 10px;border-bottom:1px solid var(--border-soft);margin-bottom:6px}
+.acct-menu .who strong{display:block;font-family:var(--serif);color:var(--ink);font-weight:500}
+.acct-menu .who span{font-size:.75rem;color:var(--muted)}
+
+/* ---------- Gate de miembros ---------- */
+.gate{background:var(--surface);border:1px dashed var(--secondary);border-radius:var(--radius);padding:28px;text-align:center;color:var(--text)}
+.gate svg{width:34px;height:34px;color:var(--secondary);margin-bottom:8px}
+.badge-mem{font-size:.68rem;letter-spacing:.04em;color:#536245;background:var(--acc-asesorias);padding:3px 9px;border-radius:20px;vertical-align:middle}
+
+/* ---------- Auth ---------- */
+.auth-wrap{max-width:440px;margin:0 auto}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px}
+.auth-tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--cream);padding:5px;border-radius:11px}
+.auth-tabs button{flex:1;border:none;background:none;font-family:inherit;font-size:.9rem;color:var(--muted);padding:9px;border-radius:8px;cursor:pointer}
+.auth-tabs button.active{background:var(--surface);color:var(--ink)}
+.note{font-size:.82rem;color:var(--muted)}
+.msg{padding:10px 14px;border-radius:9px;font-size:.86rem;margin-bottom:14px}
+.msg.err{background:#FBE7DF;color:#9C3F26}
+.msg.ok{background:var(--acc-asesorias);color:#4a5a3d}
+.demo-tip{background:#FBF0DF;border:1px solid #F2DDB8;color:#7A5A2C;font-size:.8rem;padding:10px 14px;border-radius:10px;margin-top:16px}
+
+/* ---------- Publicaciones dinámicas ---------- */
+.post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.post-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform .2s,box-shadow .2s;color:inherit}
+.post-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.post-card .ph{height:160px;background:var(--acc-cuentos);background-size:cover;background-position:center}
+.post-card .pb{padding:18px 20px;flex:1;display:flex;flex-direction:column}
+.post-card h3{font-size:1.2rem;margin-bottom:6px}
+.post-card p{font-size:.9rem;color:var(--text);flex:1}
+.post-card .meta{font-size:.72rem;letter-spacing:.03em;color:var(--muted);margin-top:12px;display:flex;gap:8px;align-items:center}
+.yt{position:relative;padding-top:56.25%;border-radius:14px;overflow:hidden;margin:22px 0;background:#000}
+.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.prose img{border-radius:12px;margin:18px 0;width:100%}
+.prose h3{font-family:var(--serif);font-size:1.5rem;margin:1.2em 0 .4em;color:var(--ink)}
+.prose ul,.prose ol{margin:0 0 1.2em 1.3em}
+.prose blockquote{border-left:3px solid var(--secondary);padding-left:16px;margin:1.2em 0;font-style:italic;color:var(--eyebrow)}
+.cover-hero{width:100%;max-height:400px;object-fit:cover;border-radius:18px;margin-bottom:18px}
+
 /* ---------- Responsive ---------- */
 @media(max-width:860px){
   .grid-4{grid-template-columns:repeat(2,1fr)}

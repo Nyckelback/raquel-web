@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · El Nido</title>
+  <meta name="description" content="Inicia sesión o regístrate en El Nido.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="entrar">
+  <div data-include="partials/header.html"></div>
+
+  <section class="section">
+    <div class="container auth-wrap">
+      <div style="text-align:center;margin-bottom:24px">
+        <p class="eyebrow" style="display:block">El Nido</p>
+        <h1 style="font-size:1.9rem">Tu espacio</h1>
+        <p class="note">Inicia sesión para ver el contenido para miembros. ¿Eres docente o estudiante? Regístrate y Raquel aprobará tu acceso.</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button id="tabLogin" class="active">Iniciar sesión</button>
+          <button id="tabSignup">Registrarme</button>
+        </div>
+
+        <div id="msg" class="msg" style="display:none"></div>
+
+        <form id="loginForm">
+          <div class="field"><label for="le">Correo</label><input id="le" name="email" type="email" required placeholder="tucorreo@ejemplo.com"></div>
+          <div class="field"><label for="lp">Contraseña</label><input id="lp" name="password" type="password" required placeholder="••••••••"></div>
+          <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">Entrar</button>
+        </form>
+
+        <form id="signupForm" style="display:none">
+          <div class="field"><label for="sn">Tu nombre</label><input id="sn" name="name" type="text" required placeholder="Nombre y apellido"></div>
+          <div class="field"><label for="se">Correo</label><input id="se" name="email" type="email" required placeholder="tucorreo@ejemplo.com"></div>
+          <div class="field"><label for="sp">Crea una contraseña</label><input id="sp" name="password" type="password" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
+          <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">Crear cuenta</button>
+        </form>
+
+        <div id="demoBox" class="demo-tip" style="display:none">
+          <strong>Modo demo</strong> — aún sin backend. Prueba entrando como:
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-light" id="demoAdmin" type="button" style="font-size:.82rem;padding:8px 14px">Entrar como Raquel</button>
+            <button class="btn btn-light" id="demoStu" type="button" style="font-size:.82rem;padding:8px 14px">Entrar como estudiante</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-include="partials/footer.html"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    (async () => {
+      await Store.ready;
+      const $ = (id) => document.getElementById(id);
+      const msg = $('msg');
+      const show = (t, cls) => { msg.textContent = t; msg.className = 'msg ' + cls; msg.style.display = 'block'; };
+      const goAfter = () => { const u = Store.auth.user(); location.href = (u && u.role === 'admin') ? 'panel.html' : 'index.html'; };
+
+      if (Store.auth.user()) goAfter();
+
+      $('tabLogin').addEventListener('click', () => { $('tabLogin').classList.add('active'); $('tabSignup').classList.remove('active'); $('loginForm').style.display = ''; $('signupForm').style.display = 'none'; msg.style.display = 'none'; });
+      $('tabSignup').addEventListener('click', () => { $('tabSignup').classList.add('active'); $('tabLogin').classList.remove('active'); $('signupForm').style.display = ''; $('loginForm').style.display = 'none'; msg.style.display = 'none'; });
+
+      $('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const r = await Store.auth.signIn($('le').value.trim(), $('lp').value);
+        if (r.error) return show(r.error, 'err');
+        goAfter();
+      });
+
+      $('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const r = await Store.auth.signUp($('se').value.trim(), $('sp').value, $('sn').value.trim());
+        if (r.error) return show(r.error, 'err');
+        show('¡Cuenta creada! Raquel revisará tu acceso a los contenidos para miembros. Ya puedes ver todo lo público.', 'ok');
+        setTimeout(() => location.href = 'index.html', 2600);
+      });
+
+      if (Store.mode === 'demo') {
+        $('demoBox').style.display = 'block';
+        $('demoAdmin').addEventListener('click', async () => { await Store.auth.demoLogin('admin'); location.href = 'panel.html'; });
+        $('demoStu').addEventListener('click', async () => { await Store.auth.demoLogin('member'); location.href = 'index.html'; });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel · El Nido</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body{background:var(--cream)}
+    .pbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:12px 22px}
+    .pbar .brand .name{font-family:var(--serif);font-size:1.25rem;color:var(--ink)}
+    .pbar .brand .name span{color:var(--primary)}
+    .player{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 60px)}
+    .pside{border-right:1px solid var(--border);padding:18px 14px;background:var(--surface)}
+    .pside a{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;color:var(--text);font-size:.92rem;cursor:pointer;margin-bottom:3px}
+    .pside a:hover{background:var(--cream)}
+    .pside a.active{background:var(--chip);color:var(--ink)}
+    .pside a svg{width:18px;height:18px}
+    .pmain{padding:30px 34px;max-width:900px}
+    .pmain h1{font-size:1.7rem;margin-bottom:4px}
+    .phead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:24px}
+    .pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:10px}
+    .pstat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+    .pstat .n{font-family:var(--serif);font-size:2rem;color:var(--primary)}
+    .pstat .l{font-size:.82rem;color:var(--muted)}
+    .prow{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px}
+    .prow .grow{flex:1;min-width:0}
+    .prow strong{font-family:var(--serif);font-weight:500;color:var(--ink);display:block}
+    .prow small{color:var(--muted)}
+    .prow .tag{font-size:.7rem;background:var(--chip);color:var(--eyebrow);padding:3px 9px;border-radius:20px;white-space:nowrap}
+    .iconbtn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 10px;cursor:pointer;color:var(--text);font-size:.82rem}
+    .iconbtn:hover{border-color:var(--secondary);color:var(--primary)}
+    .iconbtn.danger:hover{border-color:#d68b6f;color:#9C3F26}
+    .seg{display:none}.seg.active{display:block}
+    .editor-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+    #editorjs{border:1px solid var(--border);border-radius:10px;padding:8px 14px;min-height:220px;background:var(--cream)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .inline{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    label.lab{font-size:.8rem;font-weight:500;color:var(--ink);display:block;margin-bottom:5px}
+    .switchrow{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text)}
+    @media(max-width:760px){.player{grid-template-columns:1fr}.pside{display:flex;overflow:auto;gap:6px;border-right:none;border-bottom:1px solid var(--border)}.pside a{margin:0;white-space:nowrap}.pside a span{display:none}.grid2{grid-template-columns:1fr}.pmain{padding:22px 18px}}
+  </style>
+</head>
+<body data-page="panel">
+  <div class="pbar">
+    <div class="brand"><span class="name">El Nido<span>.</span></span> <span style="color:var(--muted);font-size:.85rem">· Panel</span></div>
+    <div class="inline">
+      <a class="iconbtn" href="index.html">Ver sitio</a>
+      <button class="iconbtn" id="logout">Salir</button>
+    </div>
+  </div>
+
+  <div id="loading" style="padding:60px;text-align:center;color:var(--muted)">Cargando…</div>
+
+  <div class="player" id="app" style="display:none">
+    <nav class="pside">
+      <a data-seg="resumen" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Resumen</span></a>
+      <a data-seg="posts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h6v16H6a2 2 0 0 0-2 2V5z"/><path d="M20 5a2 2 0 0 0-2-2h-6v16h6a2 2 0 0 1 2 2V5z"/></svg><span>Cuentos y artículos</span></a>
+      <a data-seg="recursos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span>Recursos</span></a>
+      <a data-seg="estudiantes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/></svg><span>Estudiantes</span></a>
+      <a data-seg="mensajes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>Mensajes</span></a>
+    </nav>
+    <main class="pmain">
+      <div id="seg-resumen" class="seg active"></div>
+      <div id="seg-posts" class="seg"></div>
+      <div id="seg-recursos" class="seg"></div>
+      <div id="seg-estudiantes" class="seg"></div>
+      <div id="seg-mensajes" class="seg"></div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.30.7/dist/editorjs.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8/dist/header.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.10.0/dist/list.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/quote.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6/dist/embed.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.2/dist/image.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/panel.js"></script>
+</body>
+</html>

@@ -42,21 +42,62 @@ function initReveal(){
   setTimeout(() => els.forEach(e => e.classList.add('in')), 4000);
 }
 
-/* Formulario de asesorías → arma un mensaje de WhatsApp (sin backend) */
+/* Aviso por correo (EmailJS, opcional). Sin config → no hace nada. */
+let _emailjsReady = null;
+function notifyEmail(subject, body) {
+  const c = (window.ELNIDO_CONFIG || {}).EMAILJS || {};
+  if (!c.PUBLIC_KEY || !c.SERVICE_ID || !c.TEMPLATE_ID) return;
+  const run = () => { try { window.emailjs.init({ publicKey: c.PUBLIC_KEY }); window.emailjs.send(c.SERVICE_ID, c.TEMPLATE_ID, { subject, message: body, to_email: (window.ELNIDO_CONFIG || {}).ADMIN_EMAIL || '' }); } catch (e) {} };
+  if (window.emailjs) return run();
+  if (!_emailjsReady) _emailjsReady = new Promise(res => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'; s.onload = res; document.head.appendChild(s); });
+  _emailjsReady.then(run);
+}
+
+/* Formulario de asesorías → guarda lead, avisa por correo y abre WhatsApp */
 function initAsesoriaForm(){
   const form = document.getElementById('asesoriaForm');
   if (!form) return;
-  form.addEventListener('submit', (ev) => {
+  form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const d = new FormData(form);
     const nombre = (d.get('nombre') || '').toString().trim();
+    const correo = (d.get('correo') || '').toString().trim();
     const tipo = (d.get('tipo') || '').toString().trim();
     const mensaje = (d.get('mensaje') || '').toString().trim();
+    try { if (window.Store) { await Store.ready; await Store.leads.create({ name: nombre, email: correo, phone: '', type: tipo, message: mensaje }); } } catch (e) {}
+    notifyEmail('Nuevo interesado en asesorías — El Nido', `Nombre: ${nombre}\nCorreo: ${correo}\nInterés: ${tipo}\nMensaje: ${mensaje}`);
     let txt = `Hola Raquel, soy ${nombre || '(nombre)'}. Me interesa: ${tipo || 'una asesoría'}.`;
     if (mensaje) txt += ` ${mensaje}`;
-    const url = 'https://wa.me/573148448163?text=' + encodeURIComponent(txt);
-    window.open(url, '_blank', 'noopener');
+    const msg = document.getElementById('formMsg');
+    if (msg) { msg.textContent = '¡Gracias! Te llevamos a WhatsApp para terminar de enviarlo. 🌿'; msg.className = 'msg ok'; }
+    window.open('https://wa.me/573148448163?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    form.reset();
   });
+}
+
+/* Estado de cuenta en el header */
+async function initAccount(){
+  const slot = document.getElementById('acct');
+  if (!slot || !window.Store) return;
+  await Store.ready;
+  const render = (u) => {
+    if (!u) { slot.innerHTML = '<a class="acct-link" href="entrar.html">Entrar</a>'; return; }
+    const ini = (u.full_name || u.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const st = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? 'Miembro' : 'Pendiente de aprobación');
+    const panel = u.role === 'admin' ? '<a href="panel.html"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Panel</a>' : '';
+    slot.innerHTML = `<button class="acct-btn" id="acctBtn" aria-label="Mi cuenta"><span class="acct-ava">${ini}</span></button>
+      <div class="acct-menu" id="acctMenu">
+        <div class="who"><strong>${u.full_name || u.email}</strong><span>${st}</span></div>
+        ${panel}
+        <button id="acctOut"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</button>
+      </div>`;
+    const btn = document.getElementById('acctBtn'), menu = document.getElementById('acctMenu');
+    btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('open'); });
+    document.addEventListener('click', () => menu.classList.remove('open'));
+    document.getElementById('acctOut').addEventListener('click', async () => { await Store.auth.signOut(); location.href = 'index.html'; });
+  };
+  render(Store.auth.user());
+  Store.auth.onChange(render);
 }
 
 (async () => {
@@ -65,4 +106,5 @@ function initAsesoriaForm(){
   initYear();
   initReveal();
   initAsesoriaForm();
+  initAccount();
 })();
