@@ -48,6 +48,23 @@
 - **Crecer barato:** si algún día se llena, movemos los archivos a Cloudflare R2 (10 GB gratis, sin
   costo por descargas). No hay que rehacer nada.
 
+## ⚠️ Notas importantes (de la auditoría)
+- **Confirmación de correo:** en Supabase → Authentication → Providers → **Email**, te recomiendo
+  **desactivar "Confirm email"** para que docentes/estudiantes puedan entrar con solo correo+contraseña.
+  Si lo dejas activado, funciona igual, pero la persona deberá confirmar desde su correo antes de entrar
+  (el sitio ya muestra el mensaje correcto en cada caso).
+- **Redirect URLs:** en Authentication → URL Configuration, agrega la URL real del sitio
+  (`https://nyckelback.github.io/raquel-web`) a *Site URL* y a *Redirect URLs*. Debe coincidir EXACTA.
+- **Modo demo NO es seguro:** mientras el sitio corra en demo (sin llaves), el "candado de miembros"
+  es solo visual; no publiques ahí PDFs o textos realmente reservados. La protección real
+  (RLS de Supabase) recién aplica cuando conectas las llaves. Con Supabase conectado, sí queda blindado.
+- **Imágenes dentro de cuentos de "solo miembros":** el TEXTO y los ARCHIVOS descargables de miembros
+  quedan protegidos por servidor. Las imágenes incrustadas y la portada se sirven por URL pública
+  (cualquiera con el link exacto la vería). Para material gráfico realmente reservado, súbelo como
+  **recurso "solo miembros"** (esos sí van al bucket privado con enlace firmado).
+- **Previsualizar:** abre el sitio con un servidor (el preview o `python3 -m http.server` dentro de
+  `web/`), **no** con doble clic en el `.html` (con `file://` el menú/pie no cargan por seguridad del navegador).
+
 ## 6) (Opcional) Dominio propio y Vercel
 - Para un dominio `tunombre.com`: cómpralo (~US$10/año en Namecheap o Cloudflare) y lo conectamos.
 - Para el link `*.vercel.app`: importa el repo `Nyckelback/raquel-web` en https://vercel.com/new.

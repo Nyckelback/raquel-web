@@ -93,9 +93,9 @@ async function initAccount(){
       </div>`;
     const btn = document.getElementById('acctBtn'), menu = document.getElementById('acctMenu');
     btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('open'); });
-    document.addEventListener('click', () => menu.classList.remove('open'));
     document.getElementById('acctOut').addEventListener('click', async () => { await Store.auth.signOut(); location.href = 'index.html'; });
   };
+  document.addEventListener('click', () => { const m = document.getElementById('acctMenu'); if (m) m.classList.remove('open'); });
   render(Store.auth.user());
   Store.auth.onChange(render);
 }

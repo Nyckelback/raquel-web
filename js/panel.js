@@ -7,6 +7,7 @@
   const esc = (s) => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const fmtSize = (b) => !b ? '' : (b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB');
   let editor = null;
+  function destroyEditor() { if (editor && editor.destroy) { try { editor.destroy(); } catch (e) {} } editor = null; }
 
   await Store.ready;
   const user = Store.auth.user();
@@ -19,6 +20,7 @@
   /* ---- navegación entre secciones ---- */
   const segs = { resumen: renderResumen, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
   function switchSeg(name) {
+    destroyEditor();
     document.querySelectorAll('.pside a').forEach(a => a.classList.toggle('active', a.dataset.seg === name));
     document.querySelectorAll('.seg').forEach(s => s.classList.remove('active'));
     $('#seg-' + name).classList.add('active');
@@ -87,10 +89,10 @@
     if (!window.EditorJS) { // fallback simple
       const t = (data && data.blocks || []).map(b => b.data && b.data.text || '').join('\n\n');
       $('#editorjs').innerHTML = `<textarea id="plainBody" style="width:100%;min-height:220px;border:none;background:transparent;font-family:var(--sans);font-size:1rem;resize:vertical">${esc(t)}</textarea>`;
-      editor = { save: async () => ({ blocks: $('#plainBody').value.split(/\n{2,}/).filter(Boolean).map(p => ({ type: 'paragraph', data: { text: esc(p) } })) }), destroy: () => {} };
+      editor = { save: async () => ({ blocks: $('#plainBody').value.split(/\n{2,}/).filter(Boolean).map(p => ({ type: 'paragraph', data: { text: p } })) }), destroy: () => {} };
       return;
     }
-    const uploader = { uploadByFile: async (file) => { const f = await optimizeImage(file); const r = await Store.uploadImage(f); return r && r.url ? { success: 1, file: { url: r.url } } : { success: 0 }; }, uploadByUrl: async (url) => ({ success: 1, file: { url } }) };
+    const uploader = { uploadByFile: async (file) => { const f = await optimizeImage(file); const r = await Store.uploadImage(f); if (!r || r.error || !r.url) { alert('No se pudo subir la imagen: ' + ((r && r.error) || 'error')); return { success: 0 }; } return { success: 1, file: { url: r.url } }; }, uploadByUrl: async (url) => ({ success: 1, file: { url } }) };
     const tools = { paragraph: { inlineToolbar: true } };
     if (window.Header) tools.header = { class: window.Header, inlineToolbar: true };
     if (ListTool) tools.list = { class: ListTool, inlineToolbar: true };
@@ -124,16 +126,25 @@
       </div>`;
     initEditor(p.content_json);
     let coverUrl = p.cover_url || '';
-    $('#fCover').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; const opt = await optimizeImage(f); const r = await Store.uploadImage(opt); coverUrl = r.url; $('#coverPrev').innerHTML = `<img src="${coverUrl}" style="max-height:90px;border-radius:8px">`; };
-    $('#back').onclick = $('#cancel').onclick = () => { if (editor && editor.destroy) try { editor.destroy(); } catch (e) {} renderPosts(); };
+    $('#fCover').onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const opt = await optimizeImage(f);
+      const r = await Store.uploadImage(opt);
+      if (!r || r.error || !r.url) { alert('No se pudo subir la imagen: ' + ((r && r.error) || 'error')); e.target.value = ''; return; }
+      coverUrl = r.url; $('#coverPrev').innerHTML = `<img src="${esc(coverUrl)}" style="max-height:90px;border-radius:8px">`;
+    };
+    $('#back').onclick = $('#cancel').onclick = () => { destroyEditor(); renderPosts(); };
     $('#save').onclick = async () => {
       const title = $('#fTitle').value.trim(); if (!title) return alert('Ponle un título.');
       let content_json = { blocks: [] }; try { content_json = await editor.save(); } catch (e) {}
-      const payload = { id: p.id, type: $('#fType').value, title, excerpt: $('#fExc').value.trim(), visibility: $('#fVis').value, published: $('#fPub').checked, video_url: $('#fVideo').value.trim(), cover_url: coverUrl, expires_at: $('#fExp').value || null, content_json };
-      $('#save').textContent = 'Guardando…'; $('#save').disabled = true;
-      await Store.posts.save(payload);
-      if (editor && editor.destroy) try { editor.destroy(); } catch (e) {}
-      renderPosts();
+      const payload = { id: p.id, slug: p.slug, type: $('#fType').value, title, excerpt: $('#fExc').value.trim(), visibility: $('#fVis').value, published: $('#fPub').checked, video_url: $('#fVideo').value.trim(), cover_url: coverUrl, expires_at: $('#fExp').value || null, content_json };
+      const btn = $('#save'); btn.textContent = 'Guardando…'; btn.disabled = true;
+      try {
+        const r = await Store.posts.save(payload);
+        if (!r || r.error) { alert('No se pudo guardar: ' + ((r && r.error) || 'error') + '\nTu texto sigue aquí.'); return; }
+        destroyEditor(); renderPosts();
+      } catch (e) { alert('Error al guardar: ' + (e && e.message || e)); }
+      finally { const b = $('#save'); if (b) { b.textContent = 'Guardar'; b.disabled = false; } }
     };
   }
 
@@ -176,11 +187,13 @@
       const maxB = (CFG.MAX_FILE_MB || 25) * 1048576;
       if (file.size > maxB) return alert('El archivo supera el límite de ' + (CFG.MAX_FILE_MB || 25) + ' MB.');
       $('#resMsg').textContent = 'Subiendo…'; $('#resSave').disabled = true;
-      const opt = await optimizeImage(file);
       const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: $('#resVis').value, expires_at: null };
-      const r = await Store.resources.save(meta, opt);
-      if (r && r.error) { $('#resMsg').textContent = 'Error: ' + r.error; $('#resSave').disabled = false; return; }
-      renderRecursos();
+      try {
+        const r = await Store.resources.save(meta, file);   // se sube tal cual (no se renombra ni recomprime)
+        if (r && r.error) { $('#resMsg').textContent = 'Error: ' + r.error; return; }
+        renderRecursos();
+      } catch (e) { $('#resMsg').textContent = 'Error: ' + (e && e.message || e); }
+      finally { const b = $('#resSave'); if (b) b.disabled = false; }
     };
   }
 

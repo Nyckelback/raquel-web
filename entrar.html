@@ -7,6 +7,7 @@
   <meta name="description" content="Inicia sesión o regístrate en El Nido.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -82,7 +83,8 @@
         e.preventDefault();
         const r = await Store.auth.signUp($('se').value.trim(), $('sp').value, $('sn').value.trim());
         if (r.error) return show(r.error, 'err');
-        show('¡Cuenta creada! Raquel revisará tu acceso a los contenidos para miembros. Ya puedes ver todo lo público.', 'ok');
+        if (r.needsConfirm) { show('¡Cuenta creada! Revisa tu correo y confirma tu cuenta para poder entrar. Luego Raquel aprobará tu acceso al contenido para miembros.', 'ok'); return; }
+        show('¡Cuenta creada! Ya puedes ver todo lo público. Raquel aprobará tu acceso al contenido para miembros.', 'ok');
         setTimeout(() => location.href = 'index.html', 2600);
       });
 

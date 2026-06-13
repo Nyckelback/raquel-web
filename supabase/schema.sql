@@ -92,8 +92,11 @@ alter table public.leads     enable row level security;
 -- Perfiles: cada quien ve el suyo; admin ve todos; admin actualiza
 drop policy if exists p_profiles_self on public.profiles;
 create policy p_profiles_self on public.profiles for select using (auth.uid() = id or public.is_admin());
+-- Solo admin actualiza perfiles (role/status). WITH CHECK evita que la fila resultante escape del control.
+-- IMPORTANTE: NO crear una política de "self-update" sobre profiles sin congelar role/status,
+-- o un miembro podría auto-promoverse a admin. Cambiar el nombre se hace por el panel de admin.
 drop policy if exists p_profiles_admin_upd on public.profiles;
-create policy p_profiles_admin_upd on public.profiles for update using (public.is_admin());
+create policy p_profiles_admin_upd on public.profiles for update using (public.is_admin()) with check (public.is_admin());
 
 -- Posts: público ve lo publicado público; miembros ven los de miembros; admin todo
 drop policy if exists p_posts_read on public.posts;
@@ -144,6 +147,8 @@ drop policy if exists s_priv_write on storage.objects;
 create policy s_priv_write on storage.objects for insert to authenticated with check (bucket_id = 'private' and public.is_admin());
 drop policy if exists s_priv_del on storage.objects;
 create policy s_priv_del on storage.objects for delete to authenticated using (bucket_id = 'private' and public.is_admin());
+drop policy if exists s_priv_mod on storage.objects;
+create policy s_priv_mod on storage.objects for update to authenticated using (bucket_id = 'private' and public.is_admin()) with check (bucket_id = 'private' and public.is_admin());
 
 -- ============================================================
 --  ÚLTIMO PASO: convertir a Raquel en administradora

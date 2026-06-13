@@ -9,12 +9,22 @@
   const DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
   const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
-  function ytId(url) {
-    const m = String(url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
-    return m ? m[1] : '';
+  function ytId(raw) {
+    const url = String(raw || '').trim(); if (!url) return '';
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\.|^m\./, '');
+      if (host === 'youtu.be') return u.pathname.slice(1).split('/')[0] || '';
+      if (host.endsWith('youtube.com')) {
+        const v = u.searchParams.get('v'); if (v) return v;
+        const m = u.pathname.match(/\/(embed|shorts|v)\/([\w-]{6,})/); if (m) return m[2];
+      }
+    } catch (e) {}
+    const m = url.match(/[?&]v=([\w-]{6,})/); return m ? m[1] : '';
   }
   function ytEmbed(url) {
-    const id = ytId(url); if (!id) return '';
+    const id = ytId(url);
+    if (!id) return url ? `<p><a href="${esc(url)}" target="_blank" rel="noopener">Ver video ↗</a></p>` : '';
     return `<div class="yt"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   }
 
@@ -25,16 +35,16 @@
       switch (b.type) {
         case 'header': return `<h${d.level || 3}>${d.text || ''}</h${d.level || 3}>`;
         case 'paragraph': return `<p>${d.text || ''}</p>`;
-        case 'quote': return `<blockquote>${d.text || ''}${d.caption ? '<cite>— ' + d.caption + '</cite>' : ''}</blockquote>`;
+        case 'quote': return `<blockquote>${esc(d.text || '')}${d.caption ? '<cite>— ' + esc(d.caption) + '</cite>' : ''}</blockquote>`;
         case 'list': {
           const tag = d.style === 'ordered' ? 'ol' : 'ul';
-          const items = (d.items || []).map(it => `<li>${typeof it === 'string' ? it : (it && it.content) || ''}</li>`).join('');
+          const items = (d.items || []).map(it => `<li>${esc(typeof it === 'string' ? it : (it && it.content) || '')}</li>`).join('');
           return `<${tag}>${items}</${tag}>`;
         }
-        case 'image': return `<figure><img src="${(d.file && d.file.url) || d.url || ''}" alt="${esc(d.caption || '')}">${d.caption ? `<figcaption class="note">${esc(d.caption)}</figcaption>` : ''}</figure>`;
+        case 'image': return `<figure><img src="${esc((d.file && d.file.url) || d.url || '')}" alt="${esc(d.caption || '')}">${d.caption ? `<figcaption class="note">${esc(d.caption)}</figcaption>` : ''}</figure>`;
         case 'embed': return ytEmbed(d.source || d.embed || '');
         case 'delimiter': return '<hr>';
-        default: return d.text ? `<p>${d.text}</p>` : '';
+        default: return d.text ? `<p>${esc(d.text)}</p>` : '';
       }
     }).join('\n');
   }

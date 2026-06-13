@@ -11,7 +11,7 @@
   const listeners = [];
   let currentUser = null;
 
-  const uid = () => 'id' + Math.random().toString(36).slice(2, 10);
+  const uid = () => (self.crypto && self.crypto.randomUUID) ? self.crypto.randomUUID() : 'id' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
   const slugify = (s) => (s || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'item';
   const notify = () => listeners.forEach(cb => { try { cb(currentUser); } catch (e) {} });
@@ -67,14 +67,29 @@
       };
     }
     function read() { try { return JSON.parse(localStorage.getItem(DB_KEY)) || null; } catch (e) { return null; } }
-    function write(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+    function write(db) { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) { throw (e && (e.name === 'QuotaExceededError' || e.code === 22)) ? new Error('QUOTA') : e; } }
     function db() { let d = read(); if (!d) { d = seed(); write(d); } return d; }
 
-    function fileToDataURL(file) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); }
+    function fileToDataURL(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = () => rej(r.error || new Error('No se pudo leer el archivo'));
+        r.onabort = () => rej(new Error('Lectura cancelada'));
+        try { r.readAsDataURL(file); } catch (e) { rej(e); }
+      });
+    }
 
     return {
       async init() {
-        try { const s = JSON.parse(localStorage.getItem(SESSION_KEY)); if (s) currentUser = s; } catch (e) {}
+        try {
+          const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+          if (s && s.id) {
+            const prof = db().profiles.find(p => p.id === s.id);     // re-deriva del perfil vivo
+            const known = s.id === 'stu-demo' || s.id === 'admin-raquel';
+            currentUser = prof ? { ...prof } : (known ? s : null);
+          }
+        } catch (e) {}
       },
       async signIn(email, pw) {
         const d = db();
@@ -108,8 +123,9 @@
       async savePost(post) {
         const d = db(); const now = new Date().toISOString().slice(0, 10);
         if (post.id) { const i = d.posts.findIndex(p => p.id === post.id); if (i >= 0) d.posts[i] = { ...d.posts[i], ...post, updated_at: now }; }
-        else { post.id = uid(); post.slug = slugify(post.title) + '-' + post.id.slice(2, 6); post.created_at = now; d.posts.push(post); }
-        write(d); return post;
+        else { post.id = uid(); post.slug = slugify(post.title) + '-' + post.id.replace(/[^a-z0-9]/gi, '').slice(0, 5); post.created_at = now; d.posts.push(post); }
+        try { write(d); } catch (e) { return { error: e.message === 'QUOTA' ? 'El navegador se quedó sin espacio (modo demo). Conecta Supabase para guardado permanente.' : 'No se pudo guardar.' }; }
+        return post;
       },
       async removePost(id) { const d = db(); d.posts = d.posts.filter(p => p.id !== id); write(d); },
 
@@ -119,21 +135,30 @@
       },
       async saveResource(meta, file) {
         const d = db(); const now = new Date().toISOString().slice(0, 10);
-        if (file) { meta.file_url = await fileToDataURL(file); meta.file_name = file.name; meta.file_type = file.type; meta.file_size = file.size; }
+        if (file) {
+          try { meta.file_url = await fileToDataURL(file); } catch (e) { return { error: 'No se pudo leer el archivo.' }; }
+          meta.file_name = file.name; meta.file_type = file.type; meta.file_size = file.size;
+        }
         if (meta.id) { const i = d.resources.findIndex(r => r.id === meta.id); if (i >= 0) d.resources[i] = { ...d.resources[i], ...meta }; }
         else { meta.id = uid(); meta.created_at = now; d.resources.push(meta); }
-        write(d); return meta;
+        try { write(d); } catch (e) { return { error: e.message === 'QUOTA' ? 'El archivo es muy grande para el modo demo (límite ~5 MB del navegador). Conecta Supabase para archivos reales.' : 'No se pudo guardar.' }; }
+        return meta;
       },
       async removeResource(id) { const d = db(); d.resources = d.resources.filter(r => r.id !== id); write(d); },
       async resourceUrl(res) { return res.file_url; },
 
       async listStudents() { return db().profiles.filter(p => p.role !== 'admin'); },
-      async setStudentStatus(id, status) { const d = db(); const p = d.profiles.find(x => x.id === id); if (p) { p.status = status; if (status === 'approved') p.role = 'member'; } write(d); },
+      async setStudentStatus(id, status) {
+        const d = db(); const p = d.profiles.find(x => x.id === id);
+        if (p) { p.status = status; if (status === 'approved') p.role = 'member'; }
+        try { write(d); } catch (e) {}
+        if (p && currentUser && currentUser.id === id) { currentUser = { ...p }; notify(); }  // refresca su propia sesión
+      },
 
-      async createLead(lead) { const d = db(); lead.id = uid(); lead.created_at = new Date().toISOString(); d.leads.unshift(lead); write(d); return lead; },
+      async createLead(lead) { const d = db(); lead.id = uid(); lead.created_at = new Date().toISOString(); d.leads.unshift(lead); try { write(d); } catch (e) {} return lead; },
       async listLeads() { return db().leads.slice(); },
 
-      async uploadImage(file) { return { url: await fileToDataURL(file) }; }
+      async uploadImage(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } }
     };
   })();
 
@@ -159,19 +184,20 @@
         const s = await client();
         const { data } = await s.auth.getUser();
         currentUser = data && data.user ? await loadProfile(data.user) : null;
-        s.auth.onAuthStateChange(async (_e, session) => { currentUser = session && session.user ? await loadProfile(session.user) : null; notify(); });
+        s.auth.onAuthStateChange(async (_e, session) => { if (_e === 'INITIAL_SESSION') return; currentUser = session && session.user ? await loadProfile(session.user) : null; notify(); });
       },
       async signIn(email, pw) {
         const s = await client();
         const { error } = await s.auth.signInWithPassword({ email, password: pw });
-        if (error) return { error: error.message };
-        const { data } = await s.auth.getUser(); currentUser = await loadProfile(data.user); notify(); return {};
+        if (error) return { error: /not confirmed/i.test(error.message) ? 'Debes confirmar tu correo antes de entrar. Revisa tu bandeja.' : error.message };
+        const { data } = await s.auth.getUser(); currentUser = await loadProfile(data.user); return {};
       },
       async signUp(email, pw, name) {
         const s = await client();
-        const { error } = await s.auth.signUp({ email, password: pw, options: { data: { full_name: name } } });
+        const { data, error } = await s.auth.signUp({ email, password: pw, options: { data: { full_name: name }, emailRedirectTo: cfg.SITE_URL } });
         if (error) return { error: error.message };
-        return { pending: true };
+        if (data && data.user && data.user.identities && data.user.identities.length === 0) return { error: 'Ese correo ya está registrado.' };
+        return { pending: true, needsConfirm: !(data && data.session) };
       },
       async demoLogin() { return { error: 'No disponible en modo real.' }; },
       async signOut() { const s = await client(); await s.auth.signOut(); currentUser = null; notify(); },
@@ -185,14 +211,20 @@
       },
       async getPost(idOrSlug) {
         const s = await client();
-        const col = /^[0-9a-f-]{20,}$/i.test(idOrSlug) ? 'id' : 'slug';
-        const { data } = await s.from('posts').select('*').eq(col, idOrSlug).single(); return data || null;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+        const base = s.from('posts').select('*');
+        const { data } = await (isUuid ? base.eq('id', idOrSlug) : base.eq('slug', idOrSlug)).maybeSingle();
+        return data || null;
       },
       async savePost(post) {
         const s = await client();
+        if (post.id) {
+          const { data, error } = await s.from('posts').update(post).eq('id', post.id).select().maybeSingle();
+          return error ? { error: error.message } : (data || { error: 'No se guardó (revisa permisos o sesión).' });
+        }
         if (!post.slug && post.title) post.slug = slugify(post.title) + '-' + Math.random().toString(36).slice(2, 6);
-        if (post.id) { const { data } = await s.from('posts').update(post).eq('id', post.id).select().single(); return data; }
-        const { data } = await s.from('posts').insert(post).select().single(); return data;
+        const { data, error } = await s.from('posts').insert(post).select().single();
+        return error ? { error: error.message } : data;
       },
       async removePost(id) { const s = await client(); await s.from('posts').delete().eq('id', id); },
 
@@ -207,8 +239,12 @@
           meta.bucket = bucket; meta.file_path = path; meta.file_name = file.name; meta.file_type = file.type; meta.file_size = file.size;
           if (bucket === 'public') meta.file_url = s.storage.from('public').getPublicUrl(path).data.publicUrl;
         }
-        if (meta.id) { const { data } = await s.from('resources').update(meta).eq('id', meta.id).select().single(); return data; }
-        const { data } = await s.from('resources').insert(meta).select().single(); return data;
+        if (meta.id) {
+          const { data, error } = await s.from('resources').update(meta).eq('id', meta.id).select().maybeSingle();
+          return error ? { error: error.message } : (data || { error: 'No se guardó (revisa permisos).' });
+        }
+        const { data, error } = await s.from('resources').insert(meta).select().single();
+        return error ? { error: error.message } : data;
       },
       async removeResource(id) { const s = await client(); await s.from('resources').delete().eq('id', id); },
       async resourceUrl(res) {
