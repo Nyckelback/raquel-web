@@ -54,7 +54,7 @@
             content_json: { blocks: [
               { type: 'paragraph', data: { text: 'Voló hierberito. Entre charamuscas se refugió.' } },
               { type: 'paragraph', data: { text: 'Las charamuscas son pajitas secas, hierba endeble. Y son, también, la barrera invisible que ampara al niño frente a la incomprensión — hasta el día en que llega un maestro capaz de valorar su voz.' } },
-              { type: 'paragraph', data: { text: '— Raquel Sofía Díaz' } }
+              { type: 'paragraph', data: { text: '— Raquel Sofía Díaz González' } }
             ] },
             created_at: '2026-06-08'
           },

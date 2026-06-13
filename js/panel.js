@@ -207,6 +207,7 @@
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
         <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién se lo asignas?</label><select id="resPerson"></select></div>
+        <div class="field"><label class="lab">¿Temporal? Vence el (opcional · déjalo vacío si es permanente)</label><input id="resExp" type="date"></div>
         <div class="inline">
           <button class="btn btn-primary" id="resSave">Subir recurso</button>
           <span id="resMsg" class="note"></span>
@@ -237,7 +238,7 @@
       const maxB = (CFG.MAX_FILE_MB || 25) * 1048576;
       if (file.size > maxB) return alert('El archivo supera el límite de ' + (CFG.MAX_FILE_MB || 25) + ' MB.');
       const vis = $('#resVis').value;
-      const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: vis, expires_at: null };
+      const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: vis, expires_at: $('#resExp').value || null };
       if (vis === 'privado') {
         const pid = $('#resPerson').value;
         if (!pid) return alert('Elige a la persona para esta asesoría.');
