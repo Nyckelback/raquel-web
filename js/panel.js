@@ -104,8 +104,9 @@
     if (!posts.length) list.innerHTML = '<p class="note">Aún no hay publicaciones. ¡Crea la primera!</p>';
     posts.forEach(p => {
       const row = document.createElement('div'); row.className = 'prow';
+      const pVis = { public: 'Público', members: 'Miembros', docentes: 'Docentes', estudiantes: 'Estudiantes' }[p.visibility] || 'Público';
       row.innerHTML = `<div class="grow"><strong>${esc(p.title)}</strong><small>${p.type === 'cuento' ? 'Cuento' : 'Artículo'} · ${p.published ? 'Publicado' : 'Borrador'}</small></div>
-        <span class="tag">${p.visibility === 'members' ? 'Miembros' : 'Público'}</span>
+        <span class="tag">${pVis}</span>
         <button class="iconbtn" data-edit="${p.id}">Editar</button><button class="iconbtn danger" data-del="${p.id}">Eliminar</button>`;
       list.appendChild(row);
     });
@@ -201,21 +202,30 @@
             <option value="members">Todos los miembros</option>
             <option value="docentes">Solo docentes</option>
             <option value="estudiantes">Solo estudiantes</option>
+            <option value="privado">Una persona (asesoría)</option>
           </select></div>
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
+        <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién se lo asignas?</label><select id="resPerson"></select></div>
         <div class="inline">
           <button class="btn btn-primary" id="resSave">Subir recurso</button>
           <span id="resMsg" class="note"></span>
         </div>
       </div>
       <div id="resList"></div>`;
+    const approvedM = (await Store.students.list()).filter(s => s.status === 'approved');
+    $('#resPerson').innerHTML = approvedM.length
+      ? approvedM.map(s => `<option value="${s.id}">${esc(s.full_name || s.email)} — ${esc(s.email)}</option>`).join('')
+      : '<option value="">(primero aprueba a alguien en Personas)</option>';
+    $('#resVis').onchange = () => { $('#resPersonWrap').style.display = $('#resVis').value === 'privado' ? '' : 'none'; };
     const list = $('#resList');
     if (!res.length) list.innerHTML = '<p class="note">Aún no hay recursos.</p>';
     res.forEach(r => {
       const row = document.createElement('div'); row.className = 'prow';
-      row.innerHTML = `<div class="grow"><strong>${esc(r.title)}</strong><small>${esc(r.category || '')} · ${esc(r.file_name || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</small></div>
-        <span class="tag">${r.visibility === 'members' ? 'Miembros' : 'Público'}</span>
+      const visLabel = { public: 'Público', members: 'Miembros', docentes: 'Docentes', estudiantes: 'Estudiantes', privado: 'Privado' }[r.visibility] || 'Público';
+      const extra = r.visibility === 'privado' && r.assigned_name ? ` · Para: ${esc(r.assigned_name)}` : '';
+      row.innerHTML = `<div class="grow"><strong>${esc(r.title)}</strong><small>${esc(r.category || '')} · ${esc(r.file_name || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}${extra}</small></div>
+        <span class="tag">${visLabel}</span>
         <button class="iconbtn danger" data-del="${r.id}">Eliminar</button>`;
       list.appendChild(row);
     });
@@ -226,8 +236,15 @@
       if (!file) return alert('Elige un archivo.');
       const maxB = (CFG.MAX_FILE_MB || 25) * 1048576;
       if (file.size > maxB) return alert('El archivo supera el límite de ' + (CFG.MAX_FILE_MB || 25) + ' MB.');
+      const vis = $('#resVis').value;
+      const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: vis, expires_at: null };
+      if (vis === 'privado') {
+        const pid = $('#resPerson').value;
+        if (!pid) return alert('Elige a la persona para esta asesoría.');
+        meta.assigned_to = pid;
+        const pm = approvedM.find(s => s.id === pid); meta.assigned_name = pm ? (pm.full_name || pm.email) : '';
+      }
       $('#resMsg').textContent = 'Subiendo…'; $('#resSave').disabled = true;
-      const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: $('#resVis').value, expires_at: null };
       try {
         const r = await Store.resources.save(meta, file);   // se sube tal cual (no se renombra ni recomprime)
         if (r && r.error) { $('#resMsg').textContent = 'Error: ' + r.error; return; }

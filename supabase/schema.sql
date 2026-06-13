@@ -42,6 +42,11 @@ create or replace function public.is_member() returns boolean
     and (role = 'admin' or (role = 'member' and status = 'approved')));
 $$;
 
+create or replace function public.my_tipo() returns text
+  language sql security definer stable as $$
+  select tipo from public.profiles where id = auth.uid();
+$$;
+
 -- ---------- Publicaciones (cuentos y artículos) ----------
 create table if not exists public.posts (
   id uuid primary key default gen_random_uuid(),
@@ -65,7 +70,8 @@ create table if not exists public.resources (
   title text not null,
   description text,
   category text,
-  visibility text not null default 'public',
+  visibility text not null default 'public',   -- public | members | docentes | estudiantes | privado
+  assigned_to uuid references auth.users(id),   -- para 'privado' (asesoría individual)
   bucket text,
   file_path text,
   file_url text,
@@ -124,6 +130,8 @@ create policy p_posts_read on public.posts for select using (
   public.is_admin()
   or (published and visibility = 'public')
   or (published and visibility = 'members' and public.is_member())
+  or (published and visibility = 'docentes' and public.is_member() and public.my_tipo() = 'docente')
+  or (published and visibility = 'estudiantes' and public.is_member() and public.my_tipo() = 'estudiante')
 );
 drop policy if exists p_posts_admin on public.posts;
 create policy p_posts_admin on public.posts for all using (public.is_admin()) with check (public.is_admin());
@@ -134,6 +142,9 @@ create policy p_res_read on public.resources for select using (
   public.is_admin()
   or visibility = 'public'
   or (visibility = 'members' and public.is_member())
+  or (visibility = 'docentes' and public.is_member() and public.my_tipo() = 'docente')
+  or (visibility = 'estudiantes' and public.is_member() and public.my_tipo() = 'estudiante')
+  or (visibility = 'privado' and assigned_to = auth.uid())
 );
 drop policy if exists p_res_admin on public.resources;
 create policy p_res_admin on public.resources for all using (public.is_admin()) with check (public.is_admin());

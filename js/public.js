@@ -60,7 +60,8 @@
     return `<a class="post-card" href="articulo.html?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
   }
   function resItem(r) {
-    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${esc(r.category || 'Recurso')}</span><a class="btn btn-light" href="#" data-res="${r.id}">Descargar</a></div>`;
+    const tag = r.visibility === 'privado' ? 'Para ti' : esc(r.category || 'Recurso');
+    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${tag}</span><a class="btn btn-light" href="#" data-res="${r.id}">Descargar</a></div>`;
   }
 
   const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;
@@ -70,7 +71,7 @@
     const posts = await Store.posts.list({ publishedOnly: true });
     const pub = posts.filter(p => !p.visibility || p.visibility === 'public');
     const restricted = posts.filter(p => p.visibility && p.visibility !== 'public');
-    const visible = restricted.filter(p => Store.canSee(p.visibility));
+    const visible = restricted.filter(p => Store.canSee(p.visibility, p));
     const u = Store.auth.user();
     let html = '';
     html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
@@ -87,7 +88,7 @@
     const res = await Store.resources.list();
     const pub = res.filter(r => !r.visibility || r.visibility === 'public');
     const restricted = res.filter(r => r.visibility && r.visibility !== 'public');
-    const visible = restricted.filter(r => Store.canSee(r.visibility));
+    const visible = restricted.filter(r => Store.canSee(r.visibility, r));
     const u = Store.auth.user();
     let html = '';
     if (pub.length) html += head('Más recursos públicos') + `<div class="downloads">${pub.map(resItem).join('')}</div>`;

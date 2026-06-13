@@ -17,11 +17,12 @@
   const notify = () => listeners.forEach(cb => { try { cb(currentUser); } catch (e) {} });
 
   /* ---------------- helper de visibilidad ---------------- */
-  function canSee(visibility) {
+  function canSee(visibility, item) {
     const u = currentUser;
     if (visibility === 'public' || !visibility) return true;
     if (!u) return false;
     if (u.role === 'admin') return true;
+    if (visibility === 'privado') return !!(item && item.assigned_to === u.id);   // asesoría individual
     const approved = u.role === 'member' && u.status === 'approved';
     if (!approved) return false;
     if (visibility === 'members') return true;
