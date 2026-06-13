@@ -49,44 +49,60 @@
     }).join('\n');
   }
 
+  const LOCKSM = '<svg style="width:16px;height:16px;vertical-align:-2px;color:var(--secondary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  const head = (t) => `<div style="max-width:62ch;margin:46px 0 18px"><h2 style="font-size:clamp(1.5rem,3vw,2rem)">${t}</h2></div>`;
+  function gate(msg) {
+    return `<div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para miembros</h3><p>${esc(msg)}</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div>`;
+  }
+  function postCard(p) {
+    const ph = p.cover_url ? `<div class="ph" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="ph"></div>`;
+    const badge = p.visibility === 'members' ? '<span class="badge-mem">Miembros</span>' : '';
+    return `<a class="post-card" href="articulo.html?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
+  }
+  function resItem(r) {
+    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${esc(r.category || 'Recurso')}</span><a class="btn btn-light" href="#" data-res="${r.id}">Descargar</a></div>`;
+  }
+
   async function mountCuentos(box) {
     await Store.ready;
     const posts = await Store.posts.list({ publishedOnly: true });
-    if (!posts.length) { box.innerHTML = '<p class="note">Próximamente más publicaciones.</p>'; return; }
-    const grid = document.createElement('div'); grid.className = 'post-grid';
-    posts.forEach(p => {
-      const see = Store.canSee(p.visibility);
-      const card = document.createElement(see ? 'a' : 'div');
-      card.className = 'post-card';
-      if (see) card.href = 'articulo.html?id=' + encodeURIComponent(p.slug || p.id);
-      const ph = p.cover_url ? `<div class="ph" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="ph"></div>`;
-      const badge = p.visibility === 'members' ? '<span class="badge-mem">Miembros</span>' : '';
-      const note = see ? '' : '· inicia sesión para leer';
-      card.innerHTML = `${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge} ${note}</div></div>`;
-      grid.appendChild(card);
-    });
-    box.innerHTML = ''; box.appendChild(grid);
+    const pub = posts.filter(p => p.visibility !== 'members');
+    const mem = posts.filter(p => p.visibility === 'members');
+    const u = Store.auth.user();
+    let html = '';
+    html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
+    if (mem.length) {
+      html += head(`Solo para miembros ${LOCKSM}`);
+      html += Store.canSee('members')
+        ? `<div class="post-grid">${mem.map(postCard).join('')}</div>`
+        : gate(u ? 'Tu acceso está pendiente de aprobación por Raquel.' : 'Inicia sesión (y pide acceso) para leer las publicaciones exclusivas.');
+    }
+    box.innerHTML = html;
   }
 
   async function mountResources(box) {
     await Store.ready;
     const res = await Store.resources.list();
-    if (!res.length) { box.innerHTML = ''; return; }
-    const wrap = document.createElement('div'); wrap.className = 'downloads';
-    res.forEach(r => {
-      const see = Store.canSee(r.visibility);
-      const item = document.createElement('div'); item.className = 'dl-item';
-      item.innerHTML = `<div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${r.visibility === 'members' ? 'Miembros' : esc(r.category || 'Recurso')}</span>`;
-      if (see) {
-        const a = document.createElement('a'); a.className = 'btn btn-light'; a.textContent = 'Descargar'; a.href = '#';
-        a.onclick = async (e) => { e.preventDefault(); const u = await Store.resources.url(r); if (!u) return; const l = document.createElement('a'); l.href = u; if (r.file_name) l.download = r.file_name; l.target = '_blank'; document.body.appendChild(l); l.click(); l.remove(); };
-        item.appendChild(a);
-      } else {
-        const s = document.createElement('a'); s.className = 'btn btn-light'; s.href = 'entrar.html'; s.textContent = 'Iniciar sesión'; item.appendChild(s);
-      }
-      wrap.appendChild(item);
+    const pub = res.filter(r => r.visibility !== 'members');
+    const mem = res.filter(r => r.visibility === 'members');
+    const u = Store.auth.user();
+    let html = '';
+    if (pub.length) html += head('Más recursos públicos') + `<div class="downloads">${pub.map(resItem).join('')}</div>`;
+    if (mem.length) {
+      html += head(`Solo para miembros ${LOCKSM}`);
+      html += Store.canSee('members')
+        ? `<div class="downloads">${mem.map(resItem).join('')}</div>`
+        : gate(u ? 'Tu acceso está pendiente de aprobación por Raquel.' : 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.');
+    }
+    box.innerHTML = html;
+    box.querySelectorAll('[data-res]').forEach(a => a.onclick = async (e) => {
+      e.preventDefault();
+      const r = res.find(x => x.id === a.dataset.res);
+      const url = r && await Store.resources.url(r);
+      if (!url) { alert('Archivo no disponible.'); return; }
+      const l = document.createElement('a'); l.href = url; if (r.file_name) l.download = r.file_name; l.target = '_blank';
+      document.body.appendChild(l); l.click(); l.remove();
     });
-    box.innerHTML = ''; box.appendChild(wrap);
   }
 
   async function mountArticle(box) {
