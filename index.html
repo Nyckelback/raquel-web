@@ -22,21 +22,27 @@
   <div data-include="partials/header.html"></div>
 
   <section class="hero">
-    <div class="container">
-      <p class="eyebrow">Educación rural · Monte Firme, Sucre</p>
-      <h1>De la jaula al nido</h1>
-      <p class="lead">Recursos, cuentos y acompañamiento pedagógico para que el asombro vuelva a volar en el aula. Material listo para descargar y replicar.</p>
-      <div class="actions">
-        <a class="btn btn-primary" href="recursos.html">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-          Recursos para docentes
-        </a>
-        <a class="btn btn-ghost" href="asesorias.html">Conocer las asesorías</a>
+    <div class="container hero-split">
+      <div class="hero-copy">
+        <p class="eyebrow">Educación rural · Monte Firme, Sucre</p>
+        <h1>De la jaula al nido</h1>
+        <p class="lead">Recursos, cuentos y acompañamiento pedagógico para que el asombro vuelva a volar en el aula. Material listo para descargar y replicar.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="recursos.html">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Recursos para docentes
+          </a>
+          <a class="btn btn-ghost" href="asesorias.html">Conocer las asesorías</a>
+        </div>
       </div>
+      <figure class="hero-figure">
+        <img src="assets/img/hero-nido.webp" alt="Nido tejido colgando entre charamuscas a la luz dorada del atardecer" width="1000" height="800">
+        <span class="tagpill">Monte Firme · Sucre</span>
+      </figure>
     </div>
   </section>
 
-  <div class="band">
+  <div class="band-img" style="background-image:url('assets/img/band-charamusca.webp')">
     <div class="container">
       <blockquote>“Voló hierberito. Entre charamuscas se refugió.”</blockquote>
       <cite>Microcuento fundacional · Oda de las Charamuscas</cite>
@@ -76,9 +82,9 @@
 
   <section class="section alt">
     <div class="container">
-      <div class="about reveal">
-        <div class="avatar">RD</div>
-        <div class="about-body">
+      <div class="feature reveal">
+        <img src="assets/img/feature-monte.webp" alt="Oropéndola posada en una rama del bosque seco del Monte Firme" width="1000" height="667">
+        <div class="feature-txt">
           <p class="eyebrow">Quién está detrás</p>
           <h2>Raquel Sofía Díaz</h2>
           <p class="role">Magíster · Doctoranda en Educación · Tutora PTA</p>
@@ -95,17 +101,15 @@
     </div>
   </section>
 
-  <section class="section">
-    <div class="container" style="text-align:center">
-      <div class="reveal" style="max-width:60ch;margin:0 auto">
-        <p class="eyebrow" style="justify-content:center">¿Necesitas acompañamiento?</p>
-        <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:14px">Asesorías a docentes, estudiantes y tesis</h2>
-        <p style="color:var(--muted);margin-bottom:26px">Cuéntame en qué estás y vemos juntos el camino. La primera conversación es por WhatsApp, sin compromiso.</p>
-        <a class="btn btn-primary" href="https://wa.me/573148448163?text=Hola%20Raquel%2C%20vi%20tu%20p%C3%A1gina%20y%20quiero%20saber%20m%C3%A1s%20de%20tus%20asesor%C3%ADas" target="_blank" rel="noopener">
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zM17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.6.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.7-1-2.3-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.3 5.3 4.6 3 1.2 3 .8 3.6.8.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4 0-.1-.2-.2-.5-.3z"/></svg>
-          Escribir por WhatsApp
-        </a>
-      </div>
+  <section class="cta-band" style="background-image:url('assets/img/band-vuelo.webp')">
+    <div class="container reveal">
+      <p class="eyebrow">¿Necesitas acompañamiento?</p>
+      <h2>Asesorías a docentes, estudiantes y tesis</h2>
+      <p>Cuéntame en qué estás y vemos juntos el camino. La primera conversación es por WhatsApp, sin compromiso.</p>
+      <a class="btn btn-primary" href="https://wa.me/573148448163?text=Hola%20Raquel%2C%20vi%20tu%20p%C3%A1gina%20y%20quiero%20saber%20m%C3%A1s%20de%20tus%20asesor%C3%ADas" target="_blank" rel="noopener">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zM17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.6.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.7-1-2.3-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.3 5.3 4.6 3 1.2 3 .8 3.6.8.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4 0-.1-.2-.2-.5-.3z"/></svg>
+        Escribir por WhatsApp
+      </a>
     </div>
   </section>
 
