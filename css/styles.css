@@ -68,7 +68,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .btn:hover{transform:translateY(-1px)}
 .btn-primary{background:var(--primary);color:var(--on-primary)}
 .btn-primary:hover{background:var(--primary-dark);box-shadow:0 8px 20px rgba(184,78,48,.25)}
-.btn-ghost{background:transparent;color:var(--eyebrow);border-color:var(--secondary)}
+.btn-ghost{background:transparent;color:var(--eyebrow);border-color:var(--eyebrow)}
 .btn-ghost:hover{background:#fff6ee}
 .btn-light{background:var(--surface);color:var(--ink);border-color:var(--border)}
 .btn .ico{width:18px;height:18px;flex-shrink:0}
@@ -140,7 +140,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .band{background:var(--band);border-top:1px solid #EAD6BF;border-bottom:1px solid #EAD6BF}
 .band .container{padding-top:26px;padding-bottom:26px}
 .band blockquote{font-family:var(--serif);font-style:italic;font-size:clamp(1.2rem,3vw,1.7rem);color:#7A4A2C;line-height:1.5}
-.band cite{display:block;font-style:normal;font-size:.82rem;letter-spacing:.04em;color:#A98363;margin-top:8px}
+.band cite{display:block;font-style:normal;font-size:.82rem;letter-spacing:.04em;color:#8A5A38;margin-top:8px}
 
 /* ---------- Sections ---------- */
 .section{padding:74px 0}

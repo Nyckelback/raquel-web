@@ -50,7 +50,7 @@
       paint();
       $('nombre').value = u.full_name || '';
       $('tipo').value = u.tipo || 'otro';
-      $('estado').textContent = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? '✓ Aprobado: ves el contenido para miembros.' : 'Pendiente: Raquel revisará tu acceso pronto.');
+      $('estado').textContent = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? '✓ Aprobado: ya ves el contenido para miembros.' : 'Pendiente: mientras tanto ya puedes ver y descargar todo lo público. Vuelve a entrar para ver el contenido de miembros cuando Raquel apruebe tu acceso.');
 
       async function shrink(file) {
         try {
