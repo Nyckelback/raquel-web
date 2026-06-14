@@ -8,7 +8,7 @@
   --surface:#FFFCF8;
   --ink:#4A332A;
   --text:#5C4438;
-  --muted:#8A6E5C;
+  --muted:#785B49;
   --hero:#F6D9C4;
   --hero-text:#5A3826;
   --eyebrow:#9C4A2A;
@@ -216,7 +216,24 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .dl-acts{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
 .dl-prevbox{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:#fff}
 .dl-prevbox iframe{width:100%;height:520px;border:0;display:block}
-@media(max-width:560px){.dl-item{flex-wrap:wrap}.dl-prevbox iframe{height:430px}}
+@media(max-width:560px){
+  .dl-item{flex-wrap:wrap}
+  .dl-prevbox iframe{height:430px}
+  /* En celular las acciones (Vista previa / Descargar) quedan anchas y fáciles de tocar */
+  .dl-acts{width:100%}
+  .dl-acts .btn{flex:1;justify-content:center;min-height:44px}
+}
+
+/* ---------- "Para ti": material privado de asesoría (bloque propio, resaltado en cálido) ---------- */
+.foryou{margin:8px 0 30px;padding:20px 22px;border:1px solid var(--primary);border-radius:var(--radius-sm);
+  background:linear-gradient(180deg, rgba(184,78,48,.07), rgba(184,78,48,.02))}
+.foryou-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.foryou-head h3{font-family:var(--serif);font-weight:500;font-size:1.2rem;color:var(--ink);margin:0}
+.foryou-head .foryou-ico{color:var(--primary);display:flex}
+.foryou-head .foryou-ico svg{width:20px;height:20px}
+.foryou .foryou-note{font-size:.88rem;color:var(--text);margin:0 0 14px;line-height:1.55}
+.foryou .dl-item{background:#fff;border-color:var(--primary)}
+.foryou .dl-tag{background:var(--primary);color:#fff}
 .res-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .rchip{font-family:var(--sans);font-size:.84rem;color:var(--ink);background:var(--surface);border:1px solid var(--border);padding:7px 15px;border-radius:20px;cursor:pointer;transition:all .15s}
 .rchip:hover{border-color:var(--secondary)}
@@ -301,16 +318,6 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
 .reveal.in{opacity:1;transform:none}
 
-/* ---------- WhatsApp float ---------- */
-.wa-float{
-  position:fixed;right:20px;bottom:20px;z-index:60;
-  width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 20px rgba(0,0,0,.18);transition:transform .2s;
-}
-.wa-float:hover{transform:scale(1.08)}
-.wa-float svg{width:30px;height:30px}
-
 /* ---------- Cuenta / login ---------- */
 .acct{position:relative;display:flex;align-items:center}
 .acct-link{font-size:.92rem;color:var(--text);cursor:pointer;padding:6px 4px}
@@ -337,7 +344,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .auth-tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--cream);padding:5px;border-radius:11px}
 .auth-tabs button{flex:1;border:none;background:none;font-family:inherit;font-size:.9rem;color:var(--muted);padding:9px;border-radius:8px;cursor:pointer}
 .auth-tabs button.active{background:var(--surface);color:var(--ink)}
-.note{font-size:.82rem;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);line-height:1.55}
 .msg{padding:10px 14px;border-radius:9px;font-size:.86rem;margin-bottom:14px}
 .msg.err{background:#FBE7DF;color:#9C3F26}
 .msg.ok{background:var(--acc-asesorias);color:#4a5a3d}
@@ -392,12 +399,23 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .nav-links a{padding:13px 0;width:100%;border-bottom:1px solid var(--border-soft)}
   .nav-links a.active::after{display:none}
   .nav-toggle{display:block}
-  .nav .nav-cta .btn-text{display:none}   /* botón WhatsApp solo ícono */
+  .nav .nav-cta .btn-text{display:none}   /* "Escríbeme" queda solo con el ícono de sobre para ahorrar espacio */
 }
 @media(max-width:720px){
-  .nav .nav-cta .btn-primary{display:none}   /* el botón flotante de WhatsApp ya cubre esto en móvil */
+  /* El contacto es solo por correo → el botón "Escríbeme" (ícono de sobre) SIGUE visible en celular,
+     que es donde está casi toda la audiencia. No se oculta. */
   .acct-extra{display:none}                   /* "Entrar / Registrarme" → "Entrar" en móvil */
   .hero{padding:60px 0 66px}
   .section{padding:54px 0}
   .grid-4{grid-template-columns:1fr}
+}
+/* Marca larga + botón "Escríbeme" + hamburguesa en pantallas chicas: compactamos los espacios
+   y dejamos que el nombre de la marca baje a dos líneas en vez de desbordar (nunca scroll horizontal). */
+@media(max-width:560px){
+  .container{padding:0 16px}
+  .nav{gap:10px}
+  .nav-cta{gap:8px}
+  .nav .nav-cta .btn-primary{padding:11px 13px}   /* "Escríbeme" compacto, solo ícono de sobre */
+  .brand{min-width:0}
+  .brand .name{font-size:1rem;white-space:normal;line-height:1.06}
 }

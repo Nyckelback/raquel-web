@@ -77,7 +77,8 @@
   }
 
   function resItem(r) {
-    const tag = r.visibility === 'privado' ? 'Para ti' : esc(r.category || 'Recurso');
+    const isPriv = r.visibility === 'privado';
+    const tag = isPriv ? `Para ti ${LOCKSM}` : esc(r.category || 'Recurso');
     const isLink = r.file_type === 'link';
     const drv = isLink ? driveInfo(r.link_url || r.file_url) : null;
     const sizeTxt = r.file_size ? ' · ' + fmtSize(r.file_size) : '';
@@ -90,7 +91,7 @@
     } else {
       acts = `<a class="btn btn-light" href="#" data-res="${esc(r.id)}">Descargar</a>`;
     }
-    const mem = (r.visibility && r.visibility !== 'public' && r.visibility !== 'privado') ? ` ${LOCKSM}` : '';
+    const mem = (r.visibility && r.visibility !== 'public' && !isPriv) ? ` ${LOCKSM}` : '';
     return `<div class="dl-card" data-cat="${esc(r.category || 'Otro')}"><div class="dl-item"><div class="dl-ico">${DL}</div>`
       + `<div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')}${sizeTxt}</span></div>`
       + `<span class="dl-tag">${tag}${mem}</span><div class="dl-acts">${acts}</div></div>`
@@ -98,7 +99,16 @@
       + `</div>`;
   }
 
-  const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu cuenta está en revisión; Raquel te dará acceso pronto.') : base;
+  const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S4 16 4 9.8A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 8 2.8C20 16 12 20.5 12 20.5z"/></svg>';
+  const isApproved = (u) => u && (u.role === 'admin' || u.status === 'approved');
+  // Bloque "Para ti": el material privado de asesoría, resaltado y arriba del todo.
+  function foryouBlock(items, u) {
+    const first = u && (u.full_name || '').trim().split(/\s+/)[0];
+    const title = first ? `Para ti, ${esc(first)}` : 'Para ti';
+    return `<div class="foryou"><div class="foryou-head"><span class="foryou-ico">${HEART}</span><h3>${title}</h3></div>`
+      + `<p class="foryou-note">Material que Raquel preparó para ti. Es privado: solo tú lo ves.</p>`
+      + `<div class="downloads">${items.map(resItem).join('')}</div></div>`;
+  }
 
   function galleryCard(p) {
     const loc = (p.content_json && p.content_json.location) || '';
@@ -122,10 +132,16 @@
     const u = Store.auth.user();
     let html = '';
     html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
-    if (restricted.length) {
+    // Lo reservado que el visitante SÍ puede ver (miembro aprobado).
+    if (visible.length) {
       html += head(`Para nuestra comunidad ${LOCKSM}`);
-      if (visible.length) html += `<div class="post-grid">${visible.map(postCard).join('')}</div>`;
-      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Crea tu cuenta gratis para leer las publicaciones de la comunidad.'));
+      html += `<div class="post-grid">${visible.map(postCard).join('')}</div>`;
+    }
+    // Invitación a quien aún no tiene acceso (anónimo o cuenta en revisión).
+    if (!isApproved(u)) {
+      html += gate(u
+        ? 'Tu cuenta está en revisión. En cuanto Raquel apruebe tu acceso, aquí verás también los cuentos y artículos reservados para la comunidad.'
+        : 'Crea tu cuenta gratis para leer también los cuentos y artículos reservados para docentes y estudiantes. Raquel revisa tu acceso y te avisa por correo.');
     }
     box.innerHTML = html;
   }
@@ -135,22 +151,30 @@
     const res = await Store.resources.list();
     const u = Store.auth.user();
     const visible = res.filter(r => Store.canSee(r.visibility, r));
-    const hidden = res.length - visible.length;
-    if (!res.length) {
+    const priv = visible.filter(r => r.visibility === 'privado');     // "Para ti" (asesoría)
+    const normal = visible.filter(r => r.visibility !== 'privado');    // recursos normales (con filtro por tema)
+    if (!visible.length && !u) {
       box.innerHTML = `<div class="res-empty">${DL}<h3>Aún no hay recursos publicados</h3><p class="note">Pronto Raquel subirá material didáctico para descargar.</p></div>`;
       return;
     }
-    // Filtros por tema (de lo que el visitante puede ver)
-    const cats = [...new Set(visible.map(r => r.category || 'Otro'))];
     let html = '';
+    // 1) Lo tuyo, arriba del todo, resaltado y FUERA del filtro por tema.
+    if (priv.length) html += foryouBlock(priv, u);
+    // 2) Recursos normales con filtros por tema (de lo que el visitante puede ver).
+    const cats = [...new Set(normal.map(r => r.category || 'Otro'))];
     if (cats.length > 1) {
       html += `<div class="res-filters"><button class="rchip active" type="button" data-cat="all">Todos</button>`
         + cats.map(c => `<button class="rchip" type="button" data-cat="${esc(c)}">${esc(c)}</button>`).join('') + `</div>`;
     }
-    html += visible.length
-      ? `<div class="downloads" id="resGrid">${visible.map(resItem).join('')}</div>`
-      : '<p class="note">Inicia sesión (y pide acceso a Raquel) para ver los recursos reservados.</p>';
-    if (hidden) html += gate(gateMsg(u, 'Crea tu cuenta gratis para ver el material de la comunidad.'));
+    if (normal.length) html += `<div class="downloads" id="resGrid">${normal.map(resItem).join('')}</div>`;
+    // 3) Invitación honesta a quien aún no tiene acceso al material reservado.
+    if (!isApproved(u)) {
+      html += gate(u
+        ? (priv.length
+            ? 'Tu material personal ya está arriba. El resto del contenido para docentes y estudiantes se habilita cuando Raquel apruebe tu cuenta — todo lo abierto ya lo puedes usar.'
+            : 'Tu cuenta está en revisión. Mientras tanto ya puedes descargar todo lo abierto; el material reservado para docentes y estudiantes se habilita cuando Raquel apruebe tu acceso.')
+        : 'Todo esto es abierto y gratis, sin registrarte. Crea tu cuenta gratis si además quieres el material reservado para docentes y estudiantes — Raquel revisa tu acceso y te avisa por correo.');
+    }
     box.innerHTML = html;
     // Filtrar por tema sin recargar
     box.querySelectorAll('.rchip').forEach(c => c.onclick = () => {
