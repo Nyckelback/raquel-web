@@ -217,11 +217,19 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .dl-prevbox{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:#fff}
 .dl-prevbox iframe{width:100%;height:520px;border:0;display:block}
 @media(max-width:560px){
-  .dl-item{flex-wrap:wrap}
+  /* En celular la tarjeta se reordena para aprovechar el ancho:
+     fila 1 = ícono + etiqueta; el título y la descripción ocupan TODO el ancho (sin apretarse
+     en una columna angosta); el botón va ancho abajo. */
+  .dl-item{flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:12px;padding:16px}
+  .dl-item .dl-ico{order:1;width:38px;height:38px}
+  .dl-tag{order:2;margin-left:auto}
+  .dl-item .dl-meta{order:3;flex:1 1 100%}
+  .dl-item .dl-meta strong{font-size:1.02rem;line-height:1.25}
+  .dl-acts{order:4;width:100%}
+  .dl-acts .btn{flex:1;justify-content:center;min-height:46px}
   .dl-prevbox iframe{height:430px}
-  /* En celular las acciones (Vista previa / Descargar) quedan anchas y fáciles de tocar */
-  .dl-acts{width:100%}
-  .dl-acts .btn{flex:1;justify-content:center;min-height:44px}
+  /* El bloque "Para ti" no desperdicia ancho en celular (menos padding anidado). */
+  .foryou{padding:16px 14px 18px;margin-bottom:24px}
 }
 
 /* ---------- "Para ti": material compartido en privado con personas específicas (bloque resaltado) ---------- */
