@@ -348,6 +348,8 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .nav-links a.active::after{display:none}
   .nav-toggle{display:block}
   .nav .nav-cta .btn-text{display:none}
+  .nav .nav-cta .btn-primary{display:none}   /* el botón flotante de WhatsApp ya cubre esto en móvil */
+  .acct-extra{display:none}                   /* "Entrar / Registrarme" → "Entrar" en móvil */
   .hero{padding:60px 0 66px}
   .section{padding:54px 0}
   .grid-4{grid-template-columns:1fr}
