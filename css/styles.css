@@ -399,23 +399,21 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .nav-links a{padding:13px 0;width:100%;border-bottom:1px solid var(--border-soft)}
   .nav-links a.active::after{display:none}
   .nav-toggle{display:block}
-  .nav .nav-cta .btn-text{display:none}   /* "Escríbeme" queda solo con el ícono de sobre para ahorrar espacio */
 }
 @media(max-width:720px){
-  /* El contacto es solo por correo → el botón "Escríbeme" (ícono de sobre) SIGUE visible en celular,
-     que es donde está casi toda la audiencia. No se oculta. */
+  /* El rincón del header queda con "Entrar" + hamburguesa. El contacto (solo correo) vive en el
+     menú como ítem "Escríbeme", más el footer y los CTA dentro de las secciones. */
   .acct-extra{display:none}                   /* "Entrar / Registrarme" → "Entrar" en móvil */
   .hero{padding:60px 0 66px}
   .section{padding:54px 0}
   .grid-4{grid-template-columns:1fr}
 }
-/* Marca larga + botón "Escríbeme" + hamburguesa en pantallas chicas: compactamos los espacios
-   y dejamos que el nombre de la marca baje a dos líneas en vez de desbordar (nunca scroll horizontal). */
+/* Marca larga ("La Oda de las Charamuscas") en pantallas chicas: compactamos los espacios
+   y dejamos que el nombre baje a dos líneas en vez de desbordar (nunca scroll horizontal). */
 @media(max-width:560px){
   .container{padding:0 16px}
   .nav{gap:10px}
   .nav-cta{gap:8px}
-  .nav .nav-cta .btn-primary{padding:11px 13px}   /* "Escríbeme" compacto, solo ícono de sobre */
   .brand{min-width:0}
   .brand .name{font-size:1rem;white-space:normal;line-height:1.06}
 }
