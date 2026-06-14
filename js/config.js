@@ -1,5 +1,5 @@
 /* ============================================================
-   El Nido — Configuración
+   La Oda de las Charamuscas — Configuración
    ------------------------------------------------------------
    Para ACTIVAR el backend real (login, panel, subidas):
    1) Crea un proyecto gratis en https://supabase.com
@@ -9,8 +9,8 @@
    este navegador) para que puedas ver y probar todo sin backend.
    ============================================================ */
 window.ELNIDO_CONFIG = {
-  SUPABASE_URL: "",          // ← pega aquí tu Project URL
-  SUPABASE_ANON_KEY: "",     // ← pega aquí tu anon public key
+  SUPABASE_URL: "https://howzobocntcchvjuescg.supabase.co",   // ← Project URL ✓
+  SUPABASE_ANON_KEY: "sb_publishable_4JZJ21c724IGvTo00lbuIw_MlO-dLna",   // Publishable key ✓
 
   SITE_URL: "https://nyckelback.github.io/raquel-web",
   ADMIN_EMAIL: "contacto@elnido.com",   // correo donde llegan los avisos

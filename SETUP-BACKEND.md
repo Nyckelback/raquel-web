@@ -26,9 +26,15 @@
 
 ## 4) Hacer a Raquel administradora
 1. Pídele a Raquel que entre a la web → **Entrar → Registrarme** con SU correo y una contraseña.
-2. En Supabase → **SQL Editor**, ejecuta (cambia el correo):
+2. En Supabase → **SQL Editor**, ejecuta (cambia el correo). NOTA: el trigger `trg_freeze_profile`
+   (anti auto-ascenso) también bloquea el UPDATE desde el SQL Editor, así que hay que levantarlo un instante:
    ```sql
-   update public.profiles set role='admin', status='approved' where email='CORREO_DE_RAQUEL@ejemplo.com';
+   begin;
+     alter table public.profiles disable trigger trg_freeze_profile;
+     update public.profiles set role='admin', status='approved', full_name='Raquel Sofía Díaz González'
+       where email='CORREO_DE_RAQUEL@ejemplo.com';
+     alter table public.profiles enable trigger trg_freeze_profile;
+   commit;
    ```
 3. Listo: ella entra y ve el **Panel** (botón en su menú de cuenta arriba a la derecha).
 

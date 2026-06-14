@@ -1,5 +1,5 @@
 /* ============================================================
-   El Nido — Panel de administración (solo Raquel)
+   La Oda de las Charamuscas — Panel de administración (solo Raquel)
    ============================================================ */
 (async () => {
   const CFG = window.ELNIDO_CONFIG || {};
@@ -18,7 +18,7 @@
   $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = 'index.html'; };
 
   /* ---- navegación entre secciones ---- */
-  const segs = { resumen: renderResumen, perfil: renderPerfil, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
+  const segs = { resumen: renderResumen, perfil: renderPerfil, pagina: renderPagina, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
   function switchSeg(name) {
     destroyEditor();
     document.querySelectorAll('.pside a').forEach(a => a.classList.toggle('active', a.dataset.seg === name));
@@ -95,11 +95,41 @@
     };
   }
 
+  /* ============================ EDITAR PÁGINA (mini-CMS) ============================ */
+  async function renderPagina() {
+    const seg = $('#seg-pagina');
+    const c = await Store.content.getAll();
+    const fields = [
+      { k: 'hero_title',     label: 'Inicio · Título grande',        def: 'Un nido para el asombro', ml: false },
+      { k: 'hero_subtitle',  label: 'Inicio · Texto bajo el título',  def: 'Recursos, cuentos y acompañamiento pedagógico para docentes, niños y familias — para que el asombro vuelva a volar en el aula.', ml: true },
+      { k: 'proposito',      label: 'Inicio · Frase “Mi propósito”',  def: 'Rescatar la memoria biocultural que se desvanece con nuestros mayores, y reavivar el asombro de los niños a través de la palabra y el juego.', ml: true },
+      { k: 'quien_bio',      label: 'Quién soy · Presentación',       def: 'Soy maestra de educación inicial y primaria. Llevo años acompañando a niñas, niños y colegas en las aulas rurales del Caribe colombiano…', ml: true },
+      { k: 'recursos_title', label: 'Recursos · Título',              def: 'Material listo para tu aula', ml: false },
+      { k: 'recursos_intro', label: 'Recursos · Texto de intro',      def: 'Actividades y reactivos pedagógicos que he creado y probado en el aula rural, para que los descargues, imprimas y los repliques con tus estudiantes.', ml: true },
+      { k: 'cuentos_intro',  label: 'Cuentos · Texto de intro',       def: 'Una compilación literaria que convive con las emociones: escritura que convierte el mutismo en asombro y creatividad.', ml: true }
+    ];
+    seg.innerHTML = `
+      <div class="phead"><div><h1>Editar página</h1><p class="note">Cambia los textos clave del sitio. Lo que dejes vacío usa el texto por defecto. Tu <strong>foto</strong> se cambia en “Mi perfil”.</p></div></div>
+      <div class="editor-box">
+        ${fields.map(f => `<div class="field"><label class="lab">${esc(f.label)}</label>${f.ml
+          ? `<textarea id="sc_${f.k}" rows="3" placeholder="${esc(f.def)}">${esc(c[f.k] || '')}</textarea>`
+          : `<input id="sc_${f.k}" type="text" placeholder="${esc(f.def)}" value="${esc(c[f.k] || '')}">`}</div>`).join('')}
+        <div class="inline"><button class="btn btn-primary" id="scSave">Guardar cambios</button><span id="scMsg" class="note"></span></div>
+      </div>`;
+    $('#scSave').onclick = async () => {
+      const patch = {}; fields.forEach(f => { patch[f.k] = ($('#sc_' + f.k).value || '').trim(); });
+      $('#scSave').disabled = true; $('#scMsg').textContent = 'Guardando…';
+      const r = await Store.content.save(patch);
+      $('#scSave').disabled = false;
+      $('#scMsg').textContent = (r && r.error) ? ('Error: ' + r.error) : '¡Guardado! Recarga el sitio (Cmd+Shift+R) para verlo.';
+    };
+  }
+
   /* ============================ POSTS ============================ */
   async function renderPosts() {
     const seg = $('#seg-posts');
     const posts = await Store.posts.list();
-    seg.innerHTML = `<div class="phead"><div><h1>Cuentos y artículos</h1><p class="note">Tu escritura, con texto, imágenes y videos. Decide quién lo ve.</p></div><button class="btn btn-primary" id="newPost">+ Nuevo</button></div><div id="postList"></div>`;
+    seg.innerHTML = `<div class="phead"><div><h1>Cuentos y artículos</h1><p class="note">Tu escritura, con texto e imágenes. Decide quién lo ve.</p></div><button class="btn btn-primary" id="newPost">+ Nuevo</button></div><div id="postList"></div>`;
     const list = $('#postList');
     if (!posts.length) list.innerHTML = '<p class="note">Aún no hay publicaciones. ¡Crea la primera!</p>';
     posts.forEach(p => {
@@ -193,7 +223,7 @@
       <div class="editor-box" style="margin-bottom:22px">
         <div class="grid2">
           <div class="field"><label class="lab">Título</label><input id="resTitle" type="text" placeholder="Nombre del recurso"></div>
-          <div class="field"><label class="lab">Categoría</label><select id="resCat"><option>Docentes</option><option>Niños</option><option>Otro</option></select></div>
+          <div class="field"><label class="lab">Tema / área</label><select id="resCat"><option>Para docentes</option><option>Para los niños</option><option>Lenguaje</option><option>Matemáticas</option><option>Ciencias</option><option>Sociales</option><option>Proyecto transversal</option><option>Otro</option></select></div>
         </div>
         <div class="field"><label class="lab">Descripción corta</label><input id="resDesc" type="text" placeholder="¿De qué trata?"></div>
         <div class="grid2">
@@ -206,7 +236,7 @@
           </select></div>
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
-        <div class="field"><label class="lab">…o pega un link de Google Drive / web (en vez de subir el archivo — no gasta espacio)</label><input id="resLink" type="url" placeholder="https://drive.google.com/..."></div>
+        <div class="field"><label class="lab">…o pega un link de Google Drive / web (en vez de subir el archivo — no gasta espacio)</label><input id="resLink" type="url" placeholder="https://drive.google.com/..."><small id="resLinkHint" class="note" style="display:none;margin-top:6px"></small></div>
         <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién se lo asignas?</label><select id="resPerson"></select></div>
         <div class="field"><label class="lab">¿Temporal? Vence el (opcional · déjalo vacío si es permanente)</label><input id="resExp" type="date"></div>
         <div class="inline">
@@ -220,6 +250,15 @@
       ? approvedM.map(s => `<option value="${s.id}">${esc(s.full_name || s.email)} — ${esc(s.email)}</option>`).join('')
       : '<option value="">(primero aprueba a alguien en Personas)</option>';
     $('#resVis').onchange = () => { $('#resPersonWrap').style.display = $('#resVis').value === 'privado' ? '' : 'none'; };
+    $('#resLink').oninput = () => {
+      const v = $('#resLink').value.trim(); const h = $('#resLinkHint');
+      const isDrive = /drive\.google\.com|docs\.google\.com/.test(v) && /\/d\/|[?&]id=/.test(v);
+      if (!v) { h.style.display = 'none'; return; }
+      h.style.display = ''; h.style.color = isDrive ? 'var(--primary)' : 'var(--muted)';
+      h.textContent = isDrive
+        ? '✓ Link de Google Drive detectado. Ábrelo en Drive como “Cualquiera con el enlace” para que se vea la vista previa en la página.'
+        : 'Link externo: se abrirá en otra pestaña (sin vista previa). Para vista previa en la página, usa un link de Google Drive.';
+    };
     const list = $('#resList');
     if (!res.length) list.innerHTML = '<p class="note">Aún no hay recursos.</p>';
     res.forEach(r => {

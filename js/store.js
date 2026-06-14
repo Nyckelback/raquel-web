@@ -1,5 +1,5 @@
 /* ============================================================
-   El Nido — Store (capa de datos)
+   La Oda de las Charamuscas — Store (capa de datos)
    Dos modos:
      • DEMO    → guarda en localStorage (sin backend, para probar todo)
      • SUPABASE → backend real (Auth + Postgres + Storage)
@@ -42,7 +42,7 @@
     function seed() {
       return {
         profiles: [
-          { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '', created_at: '2026-06-01' },
+          { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz González', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '', created_at: '2026-06-01' },
           { id: 'stu-1', email: 'marta.docente@correo.com', full_name: 'Marta Pérez', role: 'member', status: 'pending', tipo: 'docente', avatar_url: '', created_at: '2026-06-10' },
           { id: 'stu-2', email: 'juan.estudiante@correo.com', full_name: 'Juan Estudiante', role: 'member', status: 'approved', tipo: 'estudiante', avatar_url: '', created_at: '2026-06-11' }
         ],
@@ -73,7 +73,8 @@
           { id: 'r1', title: 'Guía: emociones y territorio', description: 'Alternativa al semáforo emocional', category: 'Docentes', visibility: 'public', file_name: 'guia-emociones.pdf', file_url: 'recursos-archivos/instrumentos-registro.pdf', file_type: 'application/pdf', file_size: 91386, expires_at: null, created_at: '2026-06-11' },
           { id: 'r2', title: 'Planeación anual (para miembros)', description: 'Formato de planeación de aula', category: 'Docentes', visibility: 'members', file_name: 'planeacion-anual.pdf', file_url: 'recursos-archivos/de-la-jaula-al-nido.pdf', file_type: 'application/pdf', file_size: 99780, expires_at: null, created_at: '2026-06-11' }
         ],
-        leads: []
+        leads: [],
+        content: {}
       };
     }
     function read() { try { return JSON.parse(localStorage.getItem(DB_KEY)) || null; } catch (e) { return null; } }
@@ -118,7 +119,7 @@
       },
       async demoLogin(role) {
         currentUser = role === 'admin'
-          ? { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '' }
+          ? { id: 'admin-raquel', email: 'raquel@elnido.com', full_name: 'Raquel Sofía Díaz González', role: 'admin', status: 'approved', tipo: 'docente', avatar_url: '' }
           : { id: 'stu-demo', email: 'estudiante@demo.com', full_name: 'Estudiante demo', role: 'member', status: 'approved', tipo: 'estudiante', avatar_url: '' };
         localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify(); return {};
       },
@@ -183,6 +184,13 @@
 
       async createLead(lead) { const d = db(); lead.id = uid(); lead.created_at = new Date().toISOString(); d.leads.unshift(lead); try { write(d); } catch (e) {} return lead; },
       async listLeads() { return db().leads.slice(); },
+
+      async getContent() { return db().content || {}; },
+      async saveContent(patch) {
+        const d = db(); d.content = Object.assign({}, d.content || {}, patch);
+        try { write(d); } catch (e) { return { error: 'No se pudo guardar (espacio del navegador).' }; }
+        return d.content;
+      },
 
       async uploadImage(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } },
       async uploadAvatar(file) { try { return { url: await fileToDataURL(file) }; } catch (e) { return { error: 'No se pudo leer la imagen.' }; } }
@@ -296,6 +304,22 @@
       async createLead(lead) { const s = await client(); const { data } = await s.from('leads').insert(lead).select().single(); return data; },
       async listLeads() { const s = await client(); const { data } = await s.from('leads').select('*').order('created_at', { ascending: false }); return data || []; },
 
+      async getContent() {
+        try {
+          const s = await client();
+          const { data, error } = await s.from('site_content').select('key,value');
+          if (error) return {};   // la tabla aún no existe → usa los textos por defecto
+          const o = {}; (data || []).forEach(r => { o[r.key] = r.value; }); return o;
+        } catch (e) { return {}; }
+      },
+      async saveContent(patch) {
+        const s = await client();
+        const rows = Object.keys(patch).map(k => ({ key: k, value: patch[k] }));
+        const { error } = await s.from('site_content').upsert(rows, { onConflict: 'key' });
+        if (error) return { error: /site_content/.test(error.message) ? 'Falta crear la tabla site_content (corre el SQL pendiente).' : error.message };
+        return patch;
+      },
+
       async uploadImage(file) {
         const s = await client();
         const path = 'img/' + uid() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
@@ -351,6 +375,7 @@
     },
     students: { list: () => A.listStudents(), setStatus: (id, s) => A.setStudentStatus(id, s), setTipo: (id, t) => A.setStudentTipo(id, t) },
     leads: { create: (l) => A.createLead(l), list: () => A.listLeads() },
+    content: { getAll: () => A.getContent(), save: (p) => A.saveContent(p) },
     uploadImage: (f) => A.uploadImage(f),
     uploadAvatar: (f) => A.uploadAvatar(f)
   };

@@ -155,6 +155,18 @@ create policy p_leads_insert on public.leads for insert with check (true);
 drop policy if exists p_leads_admin on public.leads;
 create policy p_leads_admin on public.leads for select using (public.is_admin());
 
+-- ---------- Contenido editable del sitio (mini-CMS: títulos, intros, bio) ----------
+create table if not exists public.site_content (
+  key text primary key,
+  value text,
+  updated_at timestamptz default now()
+);
+alter table public.site_content enable row level security;
+drop policy if exists p_sc_read on public.site_content;
+create policy p_sc_read on public.site_content for select using (true);          -- cualquiera lee (textos públicos)
+drop policy if exists p_sc_admin on public.site_content;
+create policy p_sc_admin on public.site_content for all using (public.is_admin()) with check (public.is_admin());  -- solo Raquel edita
+
 -- ============================================================
 --  ALMACENAMIENTO (Storage)
 -- ============================================================
@@ -183,10 +195,17 @@ create policy s_priv_mod on storage.objects for update to authenticated using (b
 
 -- ============================================================
 --  ÚLTIMO PASO: convertir a Raquel en administradora
---  (después de que ella se registre en la web con su correo)
---  Reemplaza el correo y ejecuta:
+--  (PRIMERO crea/registra la cuenta; el perfil se crea solo por el trigger)
+--  OJO: el trigger trg_freeze_profile congela role/status cuando no hay
+--  sesión admin (como en el SQL Editor), así que el UPDATE simple NO toma.
+--  Hay que levantar el trigger un instante. Reemplaza el correo y ejecuta:
 -- ============================================================
--- update public.profiles set role = 'admin', status = 'approved' where email = 'CORREO_DE_RAQUEL@ejemplo.com';
+-- begin;
+--   alter table public.profiles disable trigger trg_freeze_profile;
+--   update public.profiles set role='admin', status='approved', full_name='Raquel Sofía Díaz González'
+--     where email='CORREO_DE_RAQUEL@ejemplo.com';
+--   alter table public.profiles enable trigger trg_freeze_profile;
+-- commit;
 
 -- ============================================================
 --  (Opcional) Vencimiento automático SOLO de lo que tenga fecha.

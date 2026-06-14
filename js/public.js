@@ -1,5 +1,5 @@
 /* ============================================================
-   El Nido — render público de contenido dinámico
+   La Oda de las Charamuscas — render público de contenido dinámico
    Muestra cuentos/artículos y recursos que sube Raquel,
    reproduce videos de YouTube y aplica el candado de miembros.
    ============================================================ */
@@ -59,10 +59,43 @@
     const badge = p.visibility === 'members' ? '<span class="badge-mem">Miembros</span>' : '';
     return `<a class="post-card" href="articulo.html?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
   }
+  // Reconoce un link de Google Drive y arma las 3 variantes (ver, vista previa embebida, descarga directa)
+  function driveInfo(raw) {
+    const url = String(raw || '').trim();
+    if (!url || !/drive\.google\.com|docs\.google\.com/.test(url)) return null;
+    let id = '';
+    let m = url.match(/\/(?:file\/)?d\/([A-Za-z0-9_-]{10,})/);   // /file/d/ID/view  ·  /d/ID
+    if (m) id = m[1];
+    if (!id) { m = url.match(/[?&]id=([A-Za-z0-9_-]{10,})/); if (m) id = m[1]; }   // open?id=ID  ·  uc?id=ID
+    if (!id) return null;
+    return {
+      id,
+      view: `https://drive.google.com/file/d/${id}/view`,
+      preview: `https://drive.google.com/file/d/${id}/preview`,
+      download: `https://drive.google.com/uc?export=download&id=${id}`
+    };
+  }
+
   function resItem(r) {
     const tag = r.visibility === 'privado' ? 'Para ti' : esc(r.category || 'Recurso');
-    const btn = r.file_type === 'link' ? 'Abrir' : 'Descargar';
-    return `<div class="dl-item"><div class="dl-ico">${DL}</div><div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')} ${r.file_size ? '· ' + fmtSize(r.file_size) : ''}</span></div><span class="dl-tag">${tag}</span><a class="btn btn-light" href="#" data-res="${r.id}">${btn}</a></div>`;
+    const isLink = r.file_type === 'link';
+    const drv = isLink ? driveInfo(r.link_url || r.file_url) : null;
+    const sizeTxt = r.file_size ? ' · ' + fmtSize(r.file_size) : '';
+    let acts;
+    if (drv) {
+      acts = `<button class="btn btn-light" type="button" data-prev data-src="${esc(drv.preview)}">Vista previa</button>`
+           + `<a class="btn btn-light" href="${esc(drv.view)}" target="_blank" rel="noopener">Abrir ↗</a>`;
+    } else if (isLink) {
+      acts = `<a class="btn btn-light" href="${esc(r.link_url || r.file_url)}" target="_blank" rel="noopener">Abrir ↗</a>`;
+    } else {
+      acts = `<a class="btn btn-light" href="#" data-res="${esc(r.id)}">Descargar</a>`;
+    }
+    const mem = (r.visibility && r.visibility !== 'public' && r.visibility !== 'privado') ? ` ${LOCKSM}` : '';
+    return `<div class="dl-card" data-cat="${esc(r.category || 'Otro')}"><div class="dl-item"><div class="dl-ico">${DL}</div>`
+      + `<div class="dl-meta"><strong>${esc(r.title)}</strong><span>${esc(r.description || '')}${sizeTxt}</span></div>`
+      + `<span class="dl-tag">${tag}${mem}</span><div class="dl-acts">${acts}</div></div>`
+      + (drv ? `<div class="dl-prevbox" hidden></div>` : '')
+      + `</div>`;
   }
 
   const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;
@@ -87,18 +120,33 @@
   async function mountResources(box) {
     await Store.ready;
     const res = await Store.resources.list();
-    const pub = res.filter(r => !r.visibility || r.visibility === 'public');
-    const restricted = res.filter(r => r.visibility && r.visibility !== 'public');
-    const visible = restricted.filter(r => Store.canSee(r.visibility, r));
     const u = Store.auth.user();
-    let html = '';
-    if (pub.length) html += head('Más recursos públicos') + `<div class="downloads">${pub.map(resItem).join('')}</div>`;
-    if (restricted.length) {
-      html += head(`Solo para miembros ${LOCKSM}`);
-      if (visible.length) html += `<div class="downloads">${visible.map(resItem).join('')}</div>`;
-      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.'));
+    const visible = res.filter(r => Store.canSee(r.visibility, r));
+    const hidden = res.length - visible.length;
+    if (!res.length) {
+      box.innerHTML = `<div class="res-empty">${DL}<h3>Aún no hay recursos publicados</h3><p class="note">Pronto Raquel subirá material didáctico para descargar.</p></div>`;
+      return;
     }
+    // Filtros por tema (de lo que el visitante puede ver)
+    const cats = [...new Set(visible.map(r => r.category || 'Otro'))];
+    let html = '';
+    if (cats.length > 1) {
+      html += `<div class="res-filters"><button class="rchip active" type="button" data-cat="all">Todos</button>`
+        + cats.map(c => `<button class="rchip" type="button" data-cat="${esc(c)}">${esc(c)}</button>`).join('') + `</div>`;
+    }
+    html += visible.length
+      ? `<div class="downloads" id="resGrid">${visible.map(resItem).join('')}</div>`
+      : '<p class="note">Inicia sesión (y pide acceso a Raquel) para ver los recursos reservados.</p>';
+    if (hidden) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.'));
     box.innerHTML = html;
+    // Filtrar por tema sin recargar
+    box.querySelectorAll('.rchip').forEach(c => c.onclick = () => {
+      box.querySelectorAll('.rchip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      const cat = c.dataset.cat;
+      box.querySelectorAll('#resGrid .dl-card').forEach(card => { card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none'; });
+    });
+    // Descargar archivos subidos al sitio (los links de Drive/web usan su propio <a>)
     box.querySelectorAll('[data-res]').forEach(a => a.onclick = async (e) => {
       e.preventDefault();
       const r = res.find(x => x.id === a.dataset.res);
@@ -107,13 +155,14 @@
       const l = document.createElement('a'); l.href = url; if (r.file_name) l.download = r.file_name; l.target = '_blank';
       document.body.appendChild(l); l.click(); l.remove();
     });
-    box.querySelectorAll('[data-res]').forEach(a => a.onclick = async (e) => {
+    // Vista previa embebida del PDF de Google Drive (se carga solo al pulsar)
+    box.querySelectorAll('[data-prev]').forEach(btn => btn.onclick = (e) => {
       e.preventDefault();
-      const r = res.find(x => x.id === a.dataset.res);
-      const url = r && await Store.resources.url(r);
-      if (!url) { alert('Archivo no disponible.'); return; }
-      const l = document.createElement('a'); l.href = url; if (r.file_name) l.download = r.file_name; l.target = '_blank';
-      document.body.appendChild(l); l.click(); l.remove();
+      const card = btn.closest('.dl-card'); if (!card) return;
+      const pv = card.querySelector('.dl-prevbox'); if (!pv) return;
+      if (!pv.hasAttribute('hidden')) { pv.setAttribute('hidden', ''); pv.innerHTML = ''; btn.textContent = 'Vista previa'; return; }
+      pv.innerHTML = `<iframe src="${esc(btn.dataset.src)}" loading="lazy" title="Vista previa del recurso" allow="autoplay"></iframe>`;
+      pv.removeAttribute('hidden'); btn.textContent = 'Ocultar';
     });
   }
 
@@ -122,7 +171,7 @@
     const id = new URLSearchParams(location.search).get('id');
     const p = id ? await Store.posts.get(id) : null;
     if (!p || !p.published) { box.innerHTML = '<div class="container" style="max-width:60ch"><p class="note">No encontramos esta publicación.</p><p style="margin-top:14px"><a class="btn btn-light" href="cuentos.html">← Ver cuentos</a></p></div>'; return; }
-    document.title = p.title + ' · El Nido';
+    document.title = p.title + ' · La Oda de las Charamuscas';
     if (!Store.canSee(p.visibility)) {
       box.innerHTML = `<div class="container" style="max-width:60ch"><p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,2.8rem);margin-bottom:20px">${esc(p.title)}</h1><div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para miembros</h3><p>Inicia sesión para leer esta publicación completa.</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div></div>`;
       return;

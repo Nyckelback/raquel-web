@@ -1,4 +1,4 @@
-/* El Nido — interacciones del sitio */
+/* La Oda de las Charamuscas — interacciones del sitio */
 
 async function includeAll(){
   const nodes = [...document.querySelectorAll('[data-include]')];
@@ -65,7 +65,7 @@ function initAsesoriaForm(){
     const tipo = (d.get('tipo') || '').toString().trim();
     const mensaje = (d.get('mensaje') || '').toString().trim();
     try { if (window.Store) { await Store.ready; await Store.leads.create({ name: nombre, email: correo, phone: '', type: tipo, message: mensaje }); } } catch (e) {}
-    notifyEmail('Nuevo interesado en asesorías — El Nido', `Nombre: ${nombre}\nCorreo: ${correo}\nInterés: ${tipo}\nMensaje: ${mensaje}`);
+    notifyEmail('Nuevo interesado en asesorías — La Oda de las Charamuscas', `Nombre: ${nombre}\nCorreo: ${correo}\nInterés: ${tipo}\nMensaje: ${mensaje}`);
     let txt = `Hola Raquel, soy ${nombre || '(nombre)'}. Me interesa: ${tipo || 'una asesoría'}.`;
     if (mensaje) txt += ` ${mensaje}`;
     const msg = document.getElementById('formMsg');
@@ -73,6 +73,20 @@ function initAsesoriaForm(){
     window.open('https://wa.me/573148448163?text=' + encodeURIComponent(txt), '_blank', 'noopener');
     form.reset();
   });
+}
+
+/* Textos editables (mini-CMS): reemplaza el texto de los elementos con data-edit
+   por lo que Raquel guardó en "Editar página". Si no hay valor, deja el de por defecto. */
+async function initContent(){
+  if (!window.Store || !document.querySelector('[data-edit]')) return;
+  try {
+    await Store.ready;
+    const c = await Store.content.getAll();
+    document.querySelectorAll('[data-edit]').forEach(el => {
+      const v = c[el.dataset.edit];
+      if (v != null && String(v).trim() !== '') el.textContent = v;
+    });
+  } catch (e) {}
 }
 
 /* Estado de cuenta en el header */
@@ -109,4 +123,5 @@ async function initAccount(){
   initReveal();
   initAsesoriaForm();
   initAccount();
+  initContent();
 })();

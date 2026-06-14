@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quién soy · Raquel Sofía Díaz</title>
-  <meta name="description" content="Raquel Sofía Díaz: Magíster, doctoranda en Educación y tutora PTA. Docente de educación inicial y primaria en el Caribe rural. Pedagogía del desarraigo y emociones epistémicas.">
+  <title>Quién soy · Raquel Sofía Díaz González</title>
+  <meta name="description" content="Raquel Sofía Díaz González: Magíster, doctoranda en Educación y tutora PTA. Docente de educación inicial y primaria en el Caribe rural. Pedagogía del desarraigo y emociones epistémicas.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Quién soy · Raquel Sofía Díaz">
+  <meta property="og:title" content="Quién soy · Raquel Sofía Díaz González">
   <meta property="og:description" content="Magíster, doctoranda en Educación y tutora PTA. Maestra del Caribe rural que enseña con la palabra, el territorio y el asombro.">
   <meta property="og:image" content="https://nyckelback.github.io/raquel-web/assets/og.png">
   <meta property="og:image:width" content="1200">
@@ -26,7 +26,7 @@
   <section class="hero" style="padding:60px 0 64px">
     <div class="container">
       <p class="eyebrow">Quién soy</p>
-      <h1 style="font-size:clamp(2rem,5vw,3.2rem)">Raquel Sofía Díaz</h1>
+      <h1 style="font-size:clamp(2rem,5vw,3.2rem)">Raquel Sofía Díaz González</h1>
       <p class="lead" style="color:#6B4D3D">Magíster · Doctoranda en Educación · Tutora PTA. Maestra del Caribe rural que enseña con la palabra, el territorio y el asombro.</p>
     </div>
   </section>
@@ -36,7 +36,7 @@
       <div class="feature reveal" id="raquelFeature" style="margin-bottom:48px">
         <img id="raquelFoto" src="assets/img/feature-monte.webp" alt="Oropéndola posada en una rama del bosque seco del Monte Firme" width="1000" height="667">
         <div class="feature-txt">
-          <p>Soy maestra de educación inicial y primaria. Llevo años acompañando a niñas, niños y colegas en las aulas rurales del Caribe colombiano, donde la escuela y el monte se encuentran. Mi trabajo busca que cada niño descubra su voz y que ningún talento quede escondido por no haber sido mirado a tiempo.</p>
+          <p data-edit="quien_bio">Soy maestra de educación inicial y primaria. Llevo años acompañando a niñas, niños y colegas en las aulas rurales del Caribe colombiano, donde la escuela y el monte se encuentran. Mi trabajo busca que cada niño descubra su voz y que ningún talento quede escondido por no haber sido mirado a tiempo.</p>
           <div class="chips" style="margin-top:18px">
             <span class="chip">Corozal</span>
             <span class="chip">Ciénaga</span>
@@ -91,7 +91,7 @@
         const a = await Store.profile.getAdmin();
         if (a && a.avatar_url) {
           const img = document.getElementById('raquelFoto');
-          if (img) { img.src = a.avatar_url; img.alt = a.full_name || 'Raquel Sofía Díaz'; const f = document.getElementById('raquelFeature'); if (f) f.classList.add('portrait'); }
+          if (img) { img.src = a.avatar_url; img.alt = a.full_name || 'Raquel Sofía Díaz González'; const f = document.getElementById('raquelFeature'); if (f) f.classList.add('portrait'); }
         }
       } catch (e) {}
     })();
