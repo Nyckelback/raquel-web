@@ -87,7 +87,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .brand .tag{font-size:11px;letter-spacing:.1em;color:var(--muted);margin-top:1px}
 @media(max-width:380px){.brand .name{font-size:1.02rem}}
 .nav-links{display:flex;gap:18px;align-items:center}
-.nav-links a{font-size:.92rem;color:var(--text);position:relative;padding:4px 0;transition:color .2s}
+.nav-links a{font-size:.92rem;color:var(--text);position:relative;padding:4px 0;transition:color .2s;white-space:nowrap}
 .nav-links a:hover,.nav-links a.active{color:var(--primary)}
 .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--primary);border-radius:2px}
 .nav-cta{display:flex;align-items:center;gap:12px}
