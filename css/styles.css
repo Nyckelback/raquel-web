@@ -79,18 +79,19 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   backdrop-filter:saturate(140%) blur(10px);
   border-bottom:1px solid var(--border);
 }
-.nav{display:flex;align-items:center;justify-content:space-between;height:70px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:28px;height:70px}
 .brand{display:flex;flex-direction:column;line-height:1.08}
 .brand .name{font-family:var(--serif);font-size:clamp(1.1rem,2.1vw,1.4rem);color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
 .brand .name span{color:var(--primary)}
 .brand .name em{font-style:italic;color:var(--primary);font-weight:400}
 .brand .tag{font-size:11px;letter-spacing:.1em;color:var(--muted);margin-top:1px}
 @media(max-width:380px){.brand .name{font-size:1.02rem}}
-.nav-links{display:flex;gap:26px;align-items:center}
+.nav-links{display:flex;gap:18px;align-items:center}
 .nav-links a{font-size:.92rem;color:var(--text);position:relative;padding:4px 0;transition:color .2s}
 .nav-links a:hover,.nav-links a.active{color:var(--primary)}
 .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--primary);border-radius:2px}
 .nav-cta{display:flex;align-items:center;gap:12px}
+.acct-link{white-space:nowrap}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:6px}
 .nav-toggle svg{width:26px;height:26px}
 
@@ -339,9 +340,11 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .grid-3{grid-template-columns:1fr}
   .grid-2{grid-template-columns:1fr}
 }
-@media(max-width:720px){
+/* El nombre "La Oda de las Charamuscas" es largo → el menú colapsa a hamburguesa
+   antes (≤1100px) para que nunca choque con el logo. */
+@media(max-width:1100px){
   .nav-links{
-    position:fixed;inset:70px 0 auto 0;flex-direction:column;gap:0;
+    position:fixed;inset:70px 0 auto 0;flex-direction:column;gap:0;z-index:50;
     background:var(--surface);border-bottom:1px solid var(--border);
     padding:8px 24px 18px;transform:translateY(-120%);transition:transform .28s ease;
   }
@@ -349,7 +352,9 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .nav-links a{padding:13px 0;width:100%;border-bottom:1px solid var(--border-soft)}
   .nav-links a.active::after{display:none}
   .nav-toggle{display:block}
-  .nav .nav-cta .btn-text{display:none}
+  .nav .nav-cta .btn-text{display:none}   /* botón WhatsApp solo ícono */
+}
+@media(max-width:720px){
   .nav .nav-cta .btn-primary{display:none}   /* el botón flotante de WhatsApp ya cubre esto en móvil */
   .acct-extra{display:none}                   /* "Entrar / Registrarme" → "Entrar" en móvil */
   .hero{padding:60px 0 66px}

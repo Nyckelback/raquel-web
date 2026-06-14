@@ -41,7 +41,14 @@
     .inline{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
     label.lab{font-size:.8rem;font-weight:500;color:var(--ink);display:block;margin-bottom:5px}
     .switchrow{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text)}
-    @media(max-width:760px){.player{grid-template-columns:1fr}.pside{display:flex;overflow:auto;gap:6px;border-right:none;border-bottom:1px solid var(--border)}.pside a{margin:0;white-space:nowrap}.pside a span{display:none}.grid2{grid-template-columns:1fr}.pmain{padding:22px 18px}}
+    @media(max-width:760px){
+      .player{grid-template-columns:1fr}
+      .pside{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:10px 12px;border-right:none;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
+      .pside::-webkit-scrollbar{display:none}
+      .pside a{flex:0 0 auto;margin:0;white-space:nowrap;padding:8px 12px;font-size:.84rem}
+      .grid2{grid-template-columns:1fr}
+      .pmain{padding:22px 18px}
+    }
   </style>
 </head>
 <body data-page="panel">
