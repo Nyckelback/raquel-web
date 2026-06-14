@@ -53,7 +53,7 @@ function notifyEmail(subject, body) {
   _emailjsReady.then(run);
 }
 
-/* Formulario de asesorías → guarda lead, avisa por correo y abre WhatsApp */
+/* Formulario de asesorías → guarda el mensaje (lo ve Raquel en el panel) y avisa por correo */
 function initAsesoriaForm(){
   const form = document.getElementById('asesoriaForm');
   if (!form) return;
@@ -64,14 +64,13 @@ function initAsesoriaForm(){
     const correo = (d.get('correo') || '').toString().trim();
     const tipo = (d.get('tipo') || '').toString().trim();
     const mensaje = (d.get('mensaje') || '').toString().trim();
+    const btn = form.querySelector('button[type="submit"]'); if (btn) btn.disabled = true;
     try { if (window.Store) { await Store.ready; await Store.leads.create({ name: nombre, email: correo, phone: '', type: tipo, message: mensaje }); } } catch (e) {}
-    notifyEmail('Nuevo interesado en asesorías — La Oda de las Charamuscas', `Nombre: ${nombre}\nCorreo: ${correo}\nInterés: ${tipo}\nMensaje: ${mensaje}`);
-    let txt = `Hola Raquel, soy ${nombre || '(nombre)'}. Me interesa: ${tipo || 'una asesoría'}.`;
-    if (mensaje) txt += ` ${mensaje}`;
+    notifyEmail('Nuevo mensaje de asesorías — La Oda de las Charamuscas', `Nombre: ${nombre}\nCorreo: ${correo}\nInterés: ${tipo}\nMensaje: ${mensaje}`);
     const msg = document.getElementById('formMsg');
-    if (msg) { msg.textContent = '¡Gracias! Te llevamos a WhatsApp para terminar de enviarlo.'; msg.className = 'msg ok'; msg.style.display = 'block'; }
-    window.open('https://wa.me/573148448163?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    if (msg) { msg.textContent = '¡Gracias, ' + (nombre || '') + '! Raquel recibió tu mensaje y te responderá a tu correo.'; msg.className = 'msg ok'; msg.style.display = 'block'; }
     form.reset();
+    if (btn) setTimeout(() => { btn.disabled = false; }, 400);
   });
 }
 

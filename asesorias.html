@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Asesorías · Raquel Sofía Díaz González</title>
-  <meta name="description" content="Asesorías a docentes y apoyo a estudiantes en educación rural y proyectos de aula. Escríbeme por WhatsApp.">
+  <meta name="description" content="Asesorías a docentes y apoyo a estudiantes en educación rural y proyectos de aula. Escríbeme por el formulario y te respondo a tu correo.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <meta property="og:type" content="website">
@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=17">
+  <link rel="stylesheet" href="css/styles.css?v=18">
 </head>
 <body data-page="asesorias">
-  <div data-include="partials/header.html?v=17"></div>
+  <div data-include="partials/header.html?v=18"></div>
 
   <section class="hero" style="padding:60px 0 64px">
     <div class="container">
@@ -60,7 +60,7 @@
           <p class="eyebrow">Cómo funciona</p>
           <h2 style="font-size:clamp(1.6rem,3.5vw,2.2rem);margin-bottom:24px">Tres pasos sencillos</h2>
           <div style="display:grid;gap:18px">
-            <div style="display:flex;gap:14px"><span style="font-family:var(--serif);font-size:1.6rem;color:var(--primary);line-height:1">1</span><p><strong style="color:var(--ink)">Escríbeme.</strong> Cuéntame quién eres y qué necesitas, por el formulario o por WhatsApp.</p></div>
+            <div style="display:flex;gap:14px"><span style="font-family:var(--serif);font-size:1.6rem;color:var(--primary);line-height:1">1</span><p><strong style="color:var(--ink)">Escríbeme.</strong> Cuéntame quién eres y qué necesitas con el formulario de aquí abajo.</p></div>
             <div style="display:flex;gap:14px"><span style="font-family:var(--serif);font-size:1.6rem;color:var(--primary);line-height:1">2</span><p><strong style="color:var(--ink)">Conversamos.</strong> Una primera charla sin compromiso para entender tu caso y ver el plan.</p></div>
             <div style="display:flex;gap:14px"><span style="font-family:var(--serif);font-size:1.6rem;color:var(--primary);line-height:1">3</span><p><strong style="color:var(--ink)">Avanzamos juntos.</strong> Acompañamiento a tu ritmo, con materiales y seguimiento.</p></div>
           </div>
@@ -74,8 +74,8 @@
               <input id="nombre" name="nombre" type="text" placeholder="¿Cómo te llamas?" required>
             </div>
             <div class="field">
-              <label for="correo">Correo (opcional)</label>
-              <input id="correo" name="correo" type="email" placeholder="tucorreo@ejemplo.com">
+              <label for="correo">Tu correo (para responderte)</label>
+              <input id="correo" name="correo" type="email" placeholder="tucorreo@ejemplo.com" required>
             </div>
             <div class="field">
               <label for="tipo">¿En qué te ayudo?</label>
@@ -91,10 +91,10 @@
               <textarea id="mensaje" name="mensaje" placeholder="Tu mensaje..."></textarea>
             </div>
             <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center">
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zM17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.6.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.7-1-2.3-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.3 5.3 4.6 3 1.2 3 .8 3.6.8.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4 0-.1-.2-.2-.5-.3z"/></svg>
-              Escribirle a Raquel
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+              Enviar mensaje
             </button>
-            <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:12px">Se abrirá WhatsApp con tu mensaje listo para enviar.</p>
+            <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:12px">Raquel recibe tu mensaje y te responde a tu correo.</p>
             <div id="formMsg" class="msg" style="display:none;margin-top:12px"></div>
           </form>
         </div>
@@ -102,12 +102,9 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=17"></div>
-  <a class="wa-float" href="https://wa.me/573148448163?text=Hola%20Raquel" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zM17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.6-.3-.6.3-.5.8-1.6.1-.2 0-.4 0-.5 0-.2-.7-1.7-1-2.3-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.2 3.3 5.3 4.6 3 1.2 3 .8 3.6.8.5-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4 0-.1-.2-.2-.5-.3z"/></svg>
-  </a>
-  <script src="js/config.js?v=17"></script>
-  <script src="js/store.js?v=17"></script>
-  <script src="js/main.js?v=17"></script>
+  <div data-include="partials/footer.html?v=18"></div>
+  <script src="js/config.js?v=18"></script>
+  <script src="js/store.js?v=18"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>
