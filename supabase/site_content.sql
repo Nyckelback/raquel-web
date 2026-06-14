@@ -23,10 +23,10 @@ create policy p_sc_admin on public.site_content for all using (public.is_admin()
 --  Cambia assigned_to de uuid a uuid[] y ajusta la regla de lectura.
 --  (Seguro: aún no hay recursos privados creados.)
 -- ============================================================
+drop policy if exists p_res_read on public.resources;   -- quitar PRIMERO (la política depende de la columna)
 alter table public.resources drop column if exists assigned_to;
 alter table public.resources add column assigned_to uuid[];
 
-drop policy if exists p_res_read on public.resources;
 create policy p_res_read on public.resources for select using (
   public.is_admin()
   or visibility = 'public'
