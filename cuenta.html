@@ -8,10 +8,10 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=20">
+  <link rel="stylesheet" href="css/styles.css?v=21">
 </head>
 <body data-page="cuenta">
-  <div data-include="partials/header.html?v=20"></div>
+  <div data-include="partials/header.html?v=21"></div>
 
   <section class="section">
     <div class="container auth-wrap">
@@ -33,11 +33,11 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=20"></div>
+  <div data-include="partials/footer.html?v=21"></div>
 
-  <script src="js/config.js?v=20"></script>
-  <script src="js/store.js?v=20"></script>
-  <script src="js/main.js?v=20"></script>
+  <script src="js/config.js?v=21"></script>
+  <script src="js/store.js?v=21"></script>
+  <script src="js/main.js?v=21"></script>
   <script>
     (async () => {
       await Store.ready;
@@ -55,7 +55,7 @@
       else if (u.status === 'approved') {
         estadoTxt = u.tipo === 'docente' ? '✓ Tu cuenta está aprobada. Ya ves el material reservado para docentes.'
           : u.tipo === 'estudiante' ? '✓ Tu cuenta está aprobada. Ya ves el material reservado para estudiantes.'
-          : '✓ Tu cuenta está aprobada. Casi todo el material es abierto y ya lo tienes; si quieres apoyar a tu hijo en casa, escríbele a Raquel por las asesorías.';
+          : '✓ Tu cuenta está aprobada. Casi todo el material es abierto y ya lo tienes; si quieres apoyar a tu hijo en casa, escríbele a Raquel y te orienta.';
       } else {
         estadoTxt = 'Pendiente: mientras tanto ya puedes ver y descargar todo lo abierto. Cuando Raquel apruebe tu acceso, verás también el material reservado para tu grupo.';
       }

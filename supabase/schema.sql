@@ -71,7 +71,7 @@ create table if not exists public.resources (
   description text,
   category text,
   visibility text not null default 'public',   -- public | members | docentes | estudiantes | privado
-  assigned_to uuid[],                           -- para 'privado': una o varias personas (asesoría)
+  assigned_to uuid[],                           -- para 'privado': compartido con una o varias personas específicas
   bucket text,
   file_path text,
   file_url text,

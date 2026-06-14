@@ -276,7 +276,7 @@
             <option value="members">Todos los miembros</option>
             <option value="docentes">Solo docentes</option>
             <option value="estudiantes">Solo estudiantes</option>
-            <option value="privado">Una persona (asesoría)</option>
+            <option value="privado">Privado (solo las personas que elijas)</option>
           </select></div>
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
@@ -325,7 +325,7 @@
       if (link) { meta.link_url = link; meta.file_url = link; meta.file_name = 'Enlace externo'; meta.file_type = 'link'; meta.file_size = 0; }
       if (vis === 'privado') {
         const ids = [...$('#resPersonList').querySelectorAll('input:checked')].map(c => c.value);
-        if (!ids.length) return alert('Marca al menos una persona para esta asesoría.');
+        if (!ids.length) return alert('Marca al menos una persona para compartirle este material.');
         meta.assigned_to = ids;   // arreglo: una o varias personas
         meta.assigned_name = people.filter(s => ids.includes(s.id)).map(s => s.full_name || s.email).join(', ');
       }

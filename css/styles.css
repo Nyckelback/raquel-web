@@ -224,7 +224,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .dl-acts .btn{flex:1;justify-content:center;min-height:44px}
 }
 
-/* ---------- "Para ti": material privado de asesoría (bloque propio, resaltado en cálido) ---------- */
+/* ---------- "Para ti": material compartido en privado con personas específicas (bloque resaltado) ---------- */
 .foryou{margin:8px 0 30px;padding:20px 22px;border:1px solid var(--primary);border-radius:var(--radius-sm);
   background:linear-gradient(180deg, rgba(184,78,48,.07), rgba(184,78,48,.02))}
 .foryou-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}

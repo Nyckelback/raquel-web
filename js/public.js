@@ -101,7 +101,7 @@
 
   const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S4 16 4 9.8A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 8 2.8C20 16 12 20.5 12 20.5z"/></svg>';
   const isApproved = (u) => u && (u.role === 'admin' || u.status === 'approved');
-  // Bloque "Para ti": el material privado de asesoría, resaltado y arriba del todo.
+  // Bloque "Para ti": material que Raquel compartió en privado con esta persona, resaltado y arriba del todo.
   function foryouBlock(items, u) {
     const first = u && (u.full_name || '').trim().split(/\s+/)[0];
     const title = first ? `Para ti, ${esc(first)}` : 'Para ti';
@@ -151,7 +151,7 @@
     const res = await Store.resources.list();
     const u = Store.auth.user();
     const visible = res.filter(r => Store.canSee(r.visibility, r));
-    const priv = visible.filter(r => r.visibility === 'privado');     // "Para ti" (asesoría)
+    const priv = visible.filter(r => r.visibility === 'privado');     // "Para ti" (compartido en privado)
     const normal = visible.filter(r => r.visibility !== 'privado');    // recursos normales (con filtro por tema)
     if (!visible.length && !u) {
       box.innerHTML = `<div class="res-empty">${DL}<h3>Aún no hay recursos publicados</h3><p class="note">Pronto Raquel subirá material didáctico para descargar.</p></div>`;

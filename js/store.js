@@ -22,7 +22,7 @@
     if (visibility === 'public' || !visibility) return true;
     if (!u) return false;
     if (u.role === 'admin') return true;
-    if (visibility === 'privado') {                                   // asesoría: una o varias personas
+    if (visibility === 'privado') {                                   // compartido en privado con una o varias personas específicas
       const a = item && item.assigned_to;
       return Array.isArray(a) ? a.includes(u.id) : a === u.id;        // arreglo (varios) o legacy (uno)
     }
