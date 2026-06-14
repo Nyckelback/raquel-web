@@ -13,7 +13,7 @@
   const user = Store.auth.user();
   if (!user || user.role !== 'admin') { location.href = 'entrar.html'; return; }
   $('#loading').style.display = 'none';
-  $('#app').style.display = 'grid';
+  $('#app').style.display = '';   // deja que el CSS decida (grid en desktop, block en móvil)
 
   $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = 'index.html'; };
 

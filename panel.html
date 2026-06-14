@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=9">
   <style>
     body{background:var(--cream)}
     .pbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:12px 22px}
@@ -42,10 +42,10 @@
     label.lab{font-size:.8rem;font-weight:500;color:var(--ink);display:block;margin-bottom:5px}
     .switchrow{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text)}
     @media(max-width:760px){
-      .player{grid-template-columns:1fr}
-      .pside{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:10px 12px;border-right:none;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
+      .player{display:block;min-height:0}   /* nada de grid que estire la fila del menú */
+      .pside{display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:10px 12px;border-right:none;border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch}
       .pside::-webkit-scrollbar{display:none}
-      .pside a{flex:0 0 auto;margin:0;white-space:nowrap;padding:8px 12px;font-size:.84rem}
+      .pside a{flex:0 0 auto;margin:0;white-space:nowrap;padding:8px 14px;font-size:.84rem}
       .grid2{grid-template-columns:1fr}
       .pmain{padding:22px 18px}
     }
@@ -89,8 +89,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/quote.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6/dist/embed.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.2/dist/image.umd.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/panel.js"></script>
+  <script src="js/config.js?v=9"></script>
+  <script src="js/store.js?v=9"></script>
+  <script src="js/panel.js?v=9"></script>
 </body>
 </html>
