@@ -100,9 +100,22 @@
 
   const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;
 
+  function galleryCard(p) {
+    const loc = (p.content_json && p.content_json.location) || '';
+    const ph = p.cover_url ? `<div class="gal-img" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="gal-img"></div>`;
+    return `<div class="gal-card">${ph}<div class="gal-b"><h3>${esc(p.title)}</h3>${loc ? `<p class="gal-loc">📍 ${esc(loc)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}</div></div>`;
+  }
+  async function mountGallery(box) {
+    await Store.ready;
+    const items = await Store.posts.list({ type: 'galeria', publishedOnly: true });
+    box.innerHTML = items.length
+      ? `<div class="gallery-grid">${items.map(galleryCard).join('')}</div>`
+      : `<div class="res-empty"><h3>Aún no hay fotos en la galería</h3><p class="note">Pronto Raquel compartirá fotos de sus proyectos y actividades.</p></div>`;
+  }
+
   async function mountCuentos(box) {
     await Store.ready;
-    const posts = await Store.posts.list({ publishedOnly: true });
+    const posts = (await Store.posts.list({ publishedOnly: true })).filter(p => p.type !== 'galeria');
     const pub = posts.filter(p => !p.visibility || p.visibility === 'public');
     const restricted = posts.filter(p => p.visibility && p.visibility !== 'public');
     const visible = restricted.filter(p => Store.canSee(p.visibility, p));
@@ -187,7 +200,8 @@
     const c = document.getElementById('cuentosDinamicos'); if (c) mountCuentos(c);
     const r = document.getElementById('recursosDinamicos'); if (r) mountResources(r);
     const a = document.getElementById('article'); if (a) mountArticle(a);
+    const g = document.getElementById('galeriaDinamica'); if (g) mountGallery(g);
     // re-render al cambiar sesión (para que aparezcan/desaparezcan los de miembros)
-    if (window.Store) Store.auth.onChange(() => { if (c) mountCuentos(c); if (r) mountResources(r); if (a) mountArticle(a); });
+    if (window.Store) Store.auth.onChange(() => { if (c) mountCuentos(c); if (r) mountResources(r); if (a) mountArticle(a); if (g) mountGallery(g); });
   });
 })();

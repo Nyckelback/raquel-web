@@ -262,6 +262,16 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .prev-title em{font-style:italic;color:var(--primary)}
 .prev-sub{font-family:var(--serif);font-style:italic;color:var(--secondary);font-size:.9rem;margin-top:2px}
 .prev-lead{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.45}
+.cms-thumb{width:100%;max-width:300px;aspect-ratio:4/3;background:var(--chip) center/cover no-repeat;border-radius:12px;border:1px solid var(--border)}
+/* Galería pública */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.gal-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .15s,border-color .2s}
+.gal-card:hover{transform:translateY(-3px);border-color:var(--secondary)}
+.gal-img{aspect-ratio:4/3;background:var(--chip) center/cover no-repeat}
+.gal-b{padding:14px 16px}
+.gal-b h3{font-family:var(--serif);font-weight:500;font-size:1.1rem;color:var(--ink);margin-bottom:4px}
+.gal-b p{font-size:.88rem;color:var(--muted);line-height:1.5}
+.gal-loc{color:var(--primary);font-size:.82rem;margin-bottom:4px}
 
 /* ---------- Footer ---------- */
 .site-footer{background:var(--ink);color:#E9D6C6;padding:48px 0 30px}

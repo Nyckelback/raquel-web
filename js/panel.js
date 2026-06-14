@@ -18,7 +18,7 @@
   $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = 'index.html'; };
 
   /* ---- navegación entre secciones ---- */
-  const segs = { resumen: renderResumen, perfil: renderPerfil, pagina: renderPagina, posts: renderPosts, recursos: renderRecursos, estudiantes: renderEstudiantes, mensajes: renderMensajes };
+  const segs = { resumen: renderResumen, perfil: renderPerfil, pagina: renderPagina, posts: renderPosts, recursos: renderRecursos, galeria: renderGaleria, estudiantes: renderEstudiantes, mensajes: renderMensajes };
   function switchSeg(name) {
     destroyEditor();
     document.querySelectorAll('.pside a').forEach(a => a.classList.toggle('active', a.dataset.seg === name));
@@ -172,7 +172,7 @@
   /* ============================ POSTS ============================ */
   async function renderPosts() {
     const seg = $('#seg-posts');
-    const posts = await Store.posts.list();
+    const posts = (await Store.posts.list()).filter(p => p.type !== 'galeria');
     seg.innerHTML = `<div class="phead"><div><h1>Cuentos y artículos</h1><p class="note">Tu escritura, con texto e imágenes. Decide quién lo ve.</p></div><button class="btn btn-primary" id="newPost">+ Nuevo</button></div><div id="postList"></div>`;
     const list = $('#postList');
     if (!posts.length) list.innerHTML = '<p class="note">Aún no hay publicaciones. ¡Crea la primera!</p>';
@@ -336,6 +336,57 @@
         renderRecursos();
       } catch (e) { $('#resMsg').textContent = 'Error: ' + (e && e.message || e); }
       finally { const b = $('#resSave'); if (b) b.disabled = false; }
+    };
+  }
+
+  /* ============================ GALERÍA ============================ */
+  async function renderGaleria() {
+    const seg = $('#seg-galeria');
+    const items = await Store.posts.list({ type: 'galeria' });
+    seg.innerHTML = `
+      <div class="phead"><div><h1>Galería</h1><p class="note">Fotos de tus proyectos y actividades. Cada una con título, lugar y descripción.</p></div></div>
+      <div class="editor-box" style="margin-bottom:22px">
+        <div class="field"><label class="lab">Foto</label>
+          <div><label class="btn btn-light" style="cursor:pointer">Elegir foto<input id="galFoto" type="file" accept="image/*" hidden></label> <span id="galFotoMsg" class="note"></span></div>
+          <div id="galPrev" class="cms-thumb" style="display:none;margin-top:8px"></div></div>
+        <div class="grid2">
+          <div class="field"><label class="lab">Título</label><input id="galTitle" type="text" placeholder="Ej: Proyecto de aula en el Monte Firme"></div>
+          <div class="field"><label class="lab">Lugar (opcional)</label><input id="galLoc" type="text" placeholder="Ej: Corozal, Sucre"></div>
+        </div>
+        <div class="field"><label class="lab">Descripción (opcional)</label><textarea id="galDesc" rows="2" placeholder="¿Qué se ve en la foto?"></textarea></div>
+        <label class="switchrow" style="margin:4px 0 12px;align-items:flex-start"><input type="checkbox" id="galConsent" style="margin-top:3px"> <span>Confirmo que tengo permiso de las familias para publicar esta foto (sobre todo si aparecen menores).</span></label>
+        <div class="inline"><button class="btn btn-primary" id="galSave">Subir a la galería</button><span id="galMsg" class="note"></span></div>
+      </div>
+      <div id="galList"></div>`;
+    let imgUrl = '';
+    $('#galFoto').onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      $('#galFotoMsg').textContent = 'Subiendo…';
+      const r = await Store.uploadImage(await optimizeImage(f));
+      if (!r || r.error || !r.url) { $('#galFotoMsg').textContent = 'Error: ' + ((r && r.error) || 'no se pudo'); return; }
+      imgUrl = r.url; const pv = $('#galPrev'); pv.style.display = ''; pv.style.backgroundImage = `url('${imgUrl}')`; $('#galFotoMsg').textContent = '✓ Foto lista';
+    };
+    const list = $('#galList');
+    if (!items.length) list.innerHTML = '<p class="note">Aún no hay fotos en la galería.</p>';
+    items.forEach(p => {
+      const loc = (p.content_json && p.content_json.location) || '';
+      const row = document.createElement('div'); row.className = 'prow';
+      const thumb = p.cover_url ? `<div class="pavatar" style="background:url('${esc(p.cover_url)}') center/cover;border-radius:8px"></div>` : '';
+      row.innerHTML = `${thumb}<div class="grow"><strong>${esc(p.title)}</strong><small>${esc(loc)}${p.excerpt ? ' · ' + esc(p.excerpt) : ''}</small></div><button class="iconbtn danger" data-del="${p.id}">Eliminar</button>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if (confirm('¿Eliminar esta foto?')) { await Store.posts.remove(b.dataset.del); renderGaleria(); } });
+    $('#galSave').onclick = async () => {
+      const title = $('#galTitle').value.trim();
+      if (!title) return alert('Ponle un título.');
+      if (!imgUrl) return alert('Elige una foto.');
+      if (!$('#galConsent').checked) return alert('Marca que tienes permiso de las familias para publicar la foto.');
+      const payload = { type: 'galeria', title, excerpt: $('#galDesc').value.trim(), cover_url: imgUrl, content_json: { location: $('#galLoc').value.trim() }, visibility: 'public', published: true };
+      $('#galMsg').textContent = 'Guardando…'; $('#galSave').disabled = true;
+      const r = await Store.posts.save(payload);
+      $('#galSave').disabled = false;
+      if (r && r.error) { $('#galMsg').textContent = 'Error: ' + r.error; return; }
+      renderGaleria();
     };
   }
 
