@@ -106,7 +106,9 @@
       { k: 'quien_bio',      label: 'Quién soy · Presentación',       def: 'Soy maestra de educación inicial y primaria. Llevo años acompañando a niñas, niños y colegas en las aulas rurales del Caribe colombiano…', ml: true },
       { k: 'recursos_title', label: 'Recursos · Título',              def: 'Material listo para tu aula', ml: false },
       { k: 'recursos_intro', label: 'Recursos · Texto de intro',      def: 'Actividades y reactivos pedagógicos que he creado y probado en el aula rural, para que los descargues, imprimas y los repliques con tus estudiantes.', ml: true },
-      { k: 'cuentos_intro',  label: 'Cuentos · Texto de intro',       def: 'Una compilación literaria que convive con las emociones: escritura que convierte el mutismo en asombro y creatividad.', ml: true }
+      { k: 'cuentos_intro',  label: 'Cuentos · Texto de intro',       def: 'Una compilación literaria que convive con las emociones: escritura que convierte el mutismo en asombro y creatividad.', ml: true },
+      { k: 'colaboradores',  label: 'Inicio · Colaboradores (se muestra solo si escribes algo)', def: 'Nombra a quienes colaboran contigo (docentes, comunidad, instituciones)…', ml: true },
+      { k: 'proyecto_estado',label: 'El proyecto · Avance para el comité (se muestra solo si escribes algo)', def: 'Título de la tesis, universidad, línea de investigación y estado del avance…', ml: true }
     ];
     seg.innerHTML = `
       <div class="phead"><div><h1>Editar página</h1><p class="note">Cambia los textos clave del sitio. Lo que dejes vacío usa el texto por defecto. Tu <strong>foto</strong> se cambia en “Mi perfil”.</p></div></div>

@@ -86,6 +86,11 @@ async function initContent(){
       const v = c[el.dataset.edit];
       if (v != null && String(v).trim() !== '') el.textContent = v;
     });
+    // Secciones opcionales: aparecen SOLO si Raquel escribió algo (si no, quedan ocultas)
+    document.querySelectorAll('[data-show-if]').forEach(el => {
+      const v = c[el.dataset.showIf];
+      if (v != null && String(v).trim() !== '') el.style.display = '';
+    });
   } catch (e) {}
 }
 
