@@ -289,10 +289,10 @@
         </div>
       </div>
       <div id="resList"></div>`;
-    const approvedM = (await Store.students.list()).filter(s => s.status === 'approved');
-    $('#resPersonList').innerHTML = approvedM.length
-      ? approvedM.map(s => `<label class="chk-row"><input type="checkbox" value="${esc(s.id)}"> <span>${esc(s.full_name || s.email)} — ${esc(s.email)}</span></label>`).join('')
-      : '<p class="note" style="margin:0">Primero aprueba a alguien en “Personas”.</p>';
+    const people = await Store.students.list();   // cualquiera registrado (asignar algo puntual NO requiere aprobación)
+    $('#resPersonList').innerHTML = people.length
+      ? people.map(s => `<label class="chk-row"><input type="checkbox" value="${esc(s.id)}"> <span>${esc(s.full_name || s.email)} — ${esc(s.email)}</span></label>`).join('')
+      : '<p class="note" style="margin:0">Aún no hay personas registradas. Cuando alguien cree su cuenta, aparece aquí para asignarle.</p>';
     $('#resVis').onchange = () => { $('#resPersonWrap').style.display = $('#resVis').value === 'privado' ? '' : 'none'; };
     $('#resLink').oninput = () => {
       const v = $('#resLink').value.trim(); const h = $('#resLinkHint');
@@ -327,7 +327,7 @@
         const ids = [...$('#resPersonList').querySelectorAll('input:checked')].map(c => c.value);
         if (!ids.length) return alert('Marca al menos una persona para esta asesoría.');
         meta.assigned_to = ids;   // arreglo: una o varias personas
-        meta.assigned_name = approvedM.filter(s => ids.includes(s.id)).map(s => s.full_name || s.email).join(', ');
+        meta.assigned_name = people.filter(s => ids.includes(s.id)).map(s => s.full_name || s.email).join(', ');
       }
       $('#resMsg').textContent = 'Subiendo…'; $('#resSave').disabled = true;
       try {

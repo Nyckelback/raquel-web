@@ -80,7 +80,10 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   border-bottom:1px solid var(--border);
 }
 .nav{display:flex;align-items:center;justify-content:space-between;gap:28px;height:70px}
-.brand{display:flex;flex-direction:column;line-height:1.08}
+.brand{display:flex;flex-direction:row;align-items:center;gap:11px;line-height:1.08}
+.brand-mark{width:38px;height:38px;flex-shrink:0}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+@media(max-width:380px){.brand-mark{width:32px;height:32px}}
 .brand .name{font-family:var(--serif);font-size:clamp(1.1rem,2.1vw,1.4rem);color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
 .brand .name span{color:var(--primary)}
 .brand .name em{font-style:italic;color:var(--primary);font-weight:400}
