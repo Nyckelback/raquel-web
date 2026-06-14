@@ -71,7 +71,7 @@ create table if not exists public.resources (
   description text,
   category text,
   visibility text not null default 'public',   -- public | members | docentes | estudiantes | privado
-  assigned_to uuid references auth.users(id),   -- para 'privado' (asesoría individual)
+  assigned_to uuid[],                           -- para 'privado': una o varias personas (asesoría)
   bucket text,
   file_path text,
   file_url text,
@@ -144,7 +144,7 @@ create policy p_res_read on public.resources for select using (
   or (visibility = 'members' and public.is_member())
   or (visibility = 'docentes' and public.is_member() and public.my_tipo() = 'docente')
   or (visibility = 'estudiantes' and public.is_member() and public.my_tipo() = 'estudiante')
-  or (visibility = 'privado' and assigned_to = auth.uid())
+  or (visibility = 'privado' and auth.uid() = any(assigned_to))
 );
 drop policy if exists p_res_admin on public.resources;
 create policy p_res_admin on public.resources for all using (public.is_admin()) with check (public.is_admin());

@@ -243,6 +243,9 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px rgba(201,138,107,.18);
 }
 .field textarea{min-height:120px;resize:vertical}
+.chk-list{display:grid;gap:6px;max-height:200px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--cream)}
+.chk-row{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text);cursor:pointer}
+.chk-row input{width:auto;margin:0;accent-color:var(--primary)}
 
 /* ---------- Footer ---------- */
 .site-footer{background:var(--ink);color:#E9D6C6;padding:48px 0 30px}

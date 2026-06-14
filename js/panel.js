@@ -238,7 +238,7 @@
           <div class="field"><label class="lab">Archivo (máx ${CFG.MAX_FILE_MB || 25} MB)</label><input id="resFile" type="file"></div>
         </div>
         <div class="field"><label class="lab">…o pega un link de Google Drive / web (en vez de subir el archivo — no gasta espacio)</label><input id="resLink" type="url" placeholder="https://drive.google.com/..."><small id="resLinkHint" class="note" style="display:none;margin-top:6px"></small></div>
-        <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién se lo asignas?</label><select id="resPerson"></select></div>
+        <div class="field" id="resPersonWrap" style="display:none"><label class="lab">¿A quién(es) se lo asignas? <span style="font-weight:400;color:var(--muted)">(marca una o varias)</span></label><div id="resPersonList" class="chk-list"></div></div>
         <div class="field"><label class="lab">¿Temporal? Vence el (opcional · déjalo vacío si es permanente)</label><input id="resExp" type="date"></div>
         <div class="inline">
           <button class="btn btn-primary" id="resSave">Subir recurso</button>
@@ -247,9 +247,9 @@
       </div>
       <div id="resList"></div>`;
     const approvedM = (await Store.students.list()).filter(s => s.status === 'approved');
-    $('#resPerson').innerHTML = approvedM.length
-      ? approvedM.map(s => `<option value="${s.id}">${esc(s.full_name || s.email)} — ${esc(s.email)}</option>`).join('')
-      : '<option value="">(primero aprueba a alguien en Personas)</option>';
+    $('#resPersonList').innerHTML = approvedM.length
+      ? approvedM.map(s => `<label class="chk-row"><input type="checkbox" value="${esc(s.id)}"> <span>${esc(s.full_name || s.email)} — ${esc(s.email)}</span></label>`).join('')
+      : '<p class="note" style="margin:0">Primero aprueba a alguien en “Personas”.</p>';
     $('#resVis').onchange = () => { $('#resPersonWrap').style.display = $('#resVis').value === 'privado' ? '' : 'none'; };
     $('#resLink').oninput = () => {
       const v = $('#resLink').value.trim(); const h = $('#resLinkHint');
@@ -281,10 +281,10 @@
       const meta = { title, description: $('#resDesc').value.trim(), category: $('#resCat').value, visibility: vis, expires_at: $('#resExp').value || null };
       if (link) { meta.link_url = link; meta.file_url = link; meta.file_name = 'Enlace externo'; meta.file_type = 'link'; meta.file_size = 0; }
       if (vis === 'privado') {
-        const pid = $('#resPerson').value;
-        if (!pid) return alert('Elige a la persona para esta asesoría.');
-        meta.assigned_to = pid;
-        const pm = approvedM.find(s => s.id === pid); meta.assigned_name = pm ? (pm.full_name || pm.email) : '';
+        const ids = [...$('#resPersonList').querySelectorAll('input:checked')].map(c => c.value);
+        if (!ids.length) return alert('Marca al menos una persona para esta asesoría.');
+        meta.assigned_to = ids;   // arreglo: una o varias personas
+        meta.assigned_name = approvedM.filter(s => ids.includes(s.id)).map(s => s.full_name || s.email).join(', ');
       }
       $('#resMsg').textContent = 'Subiendo…'; $('#resSave').disabled = true;
       try {

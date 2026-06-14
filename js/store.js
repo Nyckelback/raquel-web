@@ -22,7 +22,10 @@
     if (visibility === 'public' || !visibility) return true;
     if (!u) return false;
     if (u.role === 'admin') return true;
-    if (visibility === 'privado') return !!(item && item.assigned_to === u.id);   // asesoría individual
+    if (visibility === 'privado') {                                   // asesoría: una o varias personas
+      const a = item && item.assigned_to;
+      return Array.isArray(a) ? a.includes(u.id) : a === u.id;        // arreglo (varios) o legacy (uno)
+    }
     const approved = u.role === 'member' && u.status === 'approved';
     if (!approved) return false;
     if (visibility === 'members') return true;
