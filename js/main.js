@@ -86,6 +86,11 @@ async function initContent(){
       const v = c[el.dataset.edit];
       if (v != null && String(v).trim() !== '') el.textContent = v;
     });
+    // Imágenes editables (foto de portada): si Raquel subió una, reemplaza la de por defecto
+    document.querySelectorAll('[data-edit-img]').forEach(el => {
+      const v = c[el.dataset.editImg];
+      if (v != null && String(v).trim() !== '') el.src = v;
+    });
     // Secciones opcionales: aparecen SOLO si Raquel escribió algo (si no, quedan ocultas)
     document.querySelectorAll('[data-show-if]').forEach(el => {
       const v = c[el.dataset.showIf];

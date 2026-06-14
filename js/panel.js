@@ -109,16 +109,59 @@
       { k: 'colaboradores',  label: 'Inicio · Colaboradores (se muestra solo si escribes algo)', def: 'Nombra a quienes colaboran contigo (docentes, comunidad, instituciones)…', ml: true },
       { k: 'proyecto_estado',label: 'El proyecto · Avance para el comité (se muestra solo si escribes algo)', def: 'Título de la tesis, universidad, línea de investigación y estado del avance…', ml: true }
     ];
+    let heroImg = c['hero_image'] || '';
+    const DEF_IMG = 'assets/img/mariposa-hero.webp';
+    const DEF_LEAD = fields.find(f => f.k === 'hero_subtitle').def;
     seg.innerHTML = `
-      <div class="phead"><div><h1>Editar página</h1><p class="note">Cambia los textos clave del sitio. Lo que dejes vacío usa el texto por defecto. Tu <strong>foto</strong> se cambia en “Mi perfil”.</p></div></div>
-      <div class="editor-box">
-        ${fields.map(f => `<div class="field"><label class="lab">${esc(f.label)}</label>${f.ml
-          ? `<textarea id="sc_${f.k}" rows="3" placeholder="${esc(f.def)}">${esc(c[f.k] || '')}</textarea>`
-          : `<input id="sc_${f.k}" type="text" placeholder="${esc(f.def)}" value="${esc(c[f.k] || '')}">`}</div>`).join('')}
-        <div class="inline"><button class="btn btn-primary" id="scSave">Guardar cambios</button><span id="scMsg" class="note"></span></div>
+      <div class="phead"><div><h1>Editar página</h1><p class="note">Cambia la foto principal y los textos. A la derecha ves cómo va quedando la portada. Lo que dejes vacío usa lo de por defecto.</p></div></div>
+      <div class="cms-grid">
+        <div class="editor-box">
+          <h3 class="cms-h">Inicio · Foto de portada</h3>
+          <div style="margin-bottom:6px"><label class="btn btn-light" style="cursor:pointer">Cambiar foto<input id="heroFotoInput" type="file" accept="image/*" hidden></label></div>
+          <p class="note">Mejor horizontal y nítida (mín. 800px de ancho). <strong>Se recorta sola</strong> al recuadro — no se daña el diseño. <span id="heroFotoMsg"></span></p>
+          <div class="field" style="margin-top:14px"><label class="lab">Etiqueta de la foto</label><input id="sc_hero_caption" type="text" placeholder="Foto de Raquel · Monte Firme" value="${esc(c['hero_caption'] || '')}"></div>
+          <h3 class="cms-h">Textos</h3>
+          ${fields.map(f => `<div class="field"><label class="lab">${esc(f.label)}</label>${f.ml
+            ? `<textarea id="sc_${f.k}" rows="3" placeholder="${esc(f.def)}">${esc(c[f.k] || '')}</textarea>`
+            : `<input id="sc_${f.k}" type="text" placeholder="${esc(f.def)}" value="${esc(c[f.k] || '')}">`}</div>`).join('')}
+          <div class="inline"><button class="btn btn-primary" id="scSave">Guardar cambios</button><span id="scMsg" class="note"></span></div>
+        </div>
+        <div class="cms-preview">
+          <p class="lab" style="margin-bottom:8px">Vista previa de la portada 👀</p>
+          <div class="prev-hero">
+            <div class="prev-img" id="prevImg"></div>
+            <div class="prev-txt">
+              <div class="prev-eyebrow">Raquel Sofía Díaz González · Proyecto doctoral</div>
+              <div class="prev-title">La Oda de las <em>Charamuscas</em></div>
+              <div class="prev-sub">de la Jaula al Nido</div>
+              <div class="prev-lead" id="prevLead"></div>
+            </div>
+          </div>
+          <p class="note" style="margin-top:10px">Así queda. Dale <strong>Guardar</strong> y recarga el sitio para verlo en vivo.</p>
+        </div>
       </div>`;
+    const paint = () => {
+      const img = heroImg || DEF_IMG;
+      $('#prevImg').style.backgroundImage = `url('${img}')`;
+      $('#prevImg').setAttribute('data-cap', $('#sc_hero_caption').value.trim() || 'Foto de Raquel · Monte Firme');
+      $('#prevLead').textContent = $('#sc_hero_subtitle').value.trim() || DEF_LEAD;
+    };
+    paint();
+    $('#sc_hero_caption').oninput = paint;
+    $('#sc_hero_subtitle').oninput = paint;
+    $('#heroFotoInput').onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      $('#heroFotoMsg').textContent = 'Subiendo…';
+      let small = false;
+      try { const b = await createImageBitmap(f); small = b.width < 700; } catch (_) {}
+      const r = await Store.uploadImage(await optimizeImage(f));
+      if (!r || r.error || !r.url) { $('#heroFotoMsg').textContent = 'No se pudo subir: ' + ((r && r.error) || 'error'); return; }
+      heroImg = r.url; paint();
+      $('#heroFotoMsg').textContent = small ? '⚠ Foto pequeña: puede verse algo borrosa (igual la guardo).' : '✓ Foto lista (dale Guardar).';
+    };
     $('#scSave').onclick = async () => {
-      const patch = {}; fields.forEach(f => { patch[f.k] = ($('#sc_' + f.k).value || '').trim(); });
+      const patch = { hero_image: heroImg, hero_caption: $('#sc_hero_caption').value.trim() };
+      fields.forEach(f => { patch[f.k] = ($('#sc_' + f.k).value || '').trim(); });
       $('#scSave').disabled = true; $('#scMsg').textContent = 'Guardando…';
       const r = await Store.content.save(patch);
       $('#scSave').disabled = false;

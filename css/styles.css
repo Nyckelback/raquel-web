@@ -246,6 +246,22 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .chk-list{display:grid;gap:6px;max-height:200px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--cream)}
 .chk-row{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--text);cursor:pointer}
 .chk-row input{width:auto;margin:0;accent-color:var(--primary)}
+/* Editor de página: editor + vista previa */
+.cms-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+@media(max-width:900px){.cms-grid{grid-template-columns:1fr}}
+.cms-h{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:1.05rem;margin:0 0 12px}
+.editor-box .cms-h + .field,.editor-box .cms-h + div{margin-top:0}
+.editor-box .cms-h:not(:first-child){margin-top:24px;padding-top:18px;border-top:1px solid var(--border)}
+.cms-preview{position:sticky;top:80px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px}
+.prev-hero{background:var(--hero);border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.prev-img{aspect-ratio:5/4;background:var(--chip) center/cover no-repeat;position:relative}
+.prev-img::after{content:attr(data-cap);position:absolute;left:8px;bottom:8px;background:var(--surface);color:var(--ink);font-family:var(--serif);font-size:.66rem;padding:4px 8px;border-radius:7px;max-width:82%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prev-txt{padding:14px}
+.prev-eyebrow{font-size:.58rem;letter-spacing:.08em;color:var(--primary);text-transform:uppercase;font-weight:600}
+.prev-title{font-family:var(--serif);font-size:1.5rem;color:var(--ink);line-height:1.04;margin-top:5px}
+.prev-title em{font-style:italic;color:var(--primary)}
+.prev-sub{font-family:var(--serif);font-style:italic;color:var(--secondary);font-size:.9rem;margin-top:2px}
+.prev-lead{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.45}
 
 /* ---------- Footer ---------- */
 .site-footer{background:var(--ink);color:#E9D6C6;padding:48px 0 30px}
