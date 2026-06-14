@@ -9,10 +9,10 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=14">
+  <link rel="stylesheet" href="css/styles.css?v=15">
 </head>
 <body data-page="entrar">
-  <div data-include="partials/header.html?v=14"></div>
+  <div data-include="partials/header.html?v=15"></div>
 
   <section class="section">
     <div class="container auth-wrap">
@@ -55,11 +55,11 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=14"></div>
+  <div data-include="partials/footer.html?v=15"></div>
 
-  <script src="js/config.js?v=14"></script>
-  <script src="js/store.js?v=14"></script>
-  <script src="js/main.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
+  <script src="js/store.js?v=15"></script>
+  <script src="js/main.js?v=15"></script>
   <script>
     (async () => {
       await Store.ready;
@@ -93,9 +93,20 @@
         $('demoBox').style.display = 'none';
         msg.className = 'msg ok'; msg.style.display = 'block';
         if (r.needsConfirm) {
-          msg.innerHTML = '<strong>✓ ¡Cuenta creada!</strong><br><br>Te enviamos un correo a <strong>' + esc(email) + '</strong>. Ábrelo y haz clic en <strong>“Confirmar mi cuenta”</strong> para activarla.<br><span style="color:var(--muted)">Si no lo ves, revisa la carpeta de spam.</span><br><br>Después, Raquel aprobará tu acceso al contenido para miembros.<br><br><a href="index.html" style="color:var(--primary);font-weight:500">← Volver al inicio</a>';
+          msg.innerHTML = '<div style="text-align:center">'
+            + '<div style="font-size:1.9rem;line-height:1;margin-bottom:10px">📬</div>'
+            + '<strong style="font-size:1.2rem;display:block;margin-bottom:10px;color:var(--ink)">¡Revisa tu correo!</strong>'
+            + '<p style="margin:0 0 6px">Te enviamos un enlace de confirmación a:</p>'
+            + '<p style="margin:0 0 14px;font-weight:600;color:var(--ink)">' + esc(email) + '</p>'
+            + '<p style="margin:0 0 20px;color:var(--muted);font-size:.9rem;line-height:1.5">Ábrelo y haz clic en <strong>“Confirmar mi cuenta”</strong>.<br>Si no lo ves, revisa la carpeta de spam.</p>'
+            + '<a href="index.html" class="btn btn-light" style="justify-content:center">← Volver al inicio</a>'
+            + '</div>';
         } else {
-          msg.innerHTML = '<strong>✓ ¡Cuenta creada!</strong><br><br>Ya puedes ver todo lo público. Raquel aprobará tu acceso al contenido para miembros.<br><br><a href="index.html" style="color:var(--primary);font-weight:500">Ir al inicio →</a>';
+          msg.innerHTML = '<div style="text-align:center">'
+            + '<strong style="font-size:1.2rem;display:block;margin-bottom:10px;color:var(--ink)">✓ ¡Cuenta creada!</strong>'
+            + '<p style="margin:0 0 18px">Ya puedes ver todo el contenido del sitio.</p>'
+            + '<a href="index.html" class="btn btn-primary" style="justify-content:center">Ir al inicio →</a>'
+            + '</div>';
           setTimeout(() => location.href = 'index.html', 2800);
         }
       });
