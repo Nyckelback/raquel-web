@@ -396,7 +396,7 @@
     const studs = await Store.students.list();
     seg.innerHTML = `
       <div class="phead"><div><h1>Personas</h1><p class="note">Aprueba accesos y organiza por tipo. Busca por nombre o correo.</p></div></div>
-      <input id="stuSearch" class="psearch" type="search" placeholder="Buscar por nombre o correo…" style="width:100%;max-width:360px;margin-bottom:14px">
+      <input id="stuSearch" class="psearch" type="search" placeholder="Buscar por nombre o correo…" style="max-width:460px;margin-bottom:16px">
       <div class="pfilters" id="stuFilters">
         <button class="pchip active" data-f="all">Todos</button>
         <button class="pchip" data-f="docente">Docentes</button>
