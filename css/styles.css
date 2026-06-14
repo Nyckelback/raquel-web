@@ -97,6 +97,8 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 /* ---------- Hero ---------- */
 .hero{background:var(--hero);padding:84px 0 92px;position:relative;overflow:hidden}
 .hero h1{color:var(--hero-text);font-size:clamp(2.4rem,6vw,4rem);max-width:14ch;margin-bottom:18px}
+.hero h1 em{font-style:italic;color:var(--primary)}
+.hero-tagline{font-family:var(--serif);font-style:italic;color:var(--secondary);font-size:clamp(1.15rem,2.6vw,1.6rem);line-height:1.2;margin:-10px 0 18px}
 .hero .lead{color:#6B4D3D;max-width:46ch;font-size:1.15rem;margin-bottom:30px}
 .hero .actions{display:flex;gap:14px;flex-wrap:wrap}
 .hero-deco{position:absolute;right:-40px;bottom:-40px;width:340px;opacity:.5;pointer-events:none}

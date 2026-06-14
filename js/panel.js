@@ -100,8 +100,7 @@
     const seg = $('#seg-pagina');
     const c = await Store.content.getAll();
     const fields = [
-      { k: 'hero_title',     label: 'Inicio · Título grande',        def: 'Un nido para el asombro', ml: false },
-      { k: 'hero_subtitle',  label: 'Inicio · Texto bajo el título',  def: 'Recursos, cuentos y acompañamiento pedagógico para docentes, niños y familias — para que el asombro vuelva a volar en el aula.', ml: true },
+      { k: 'hero_subtitle',  label: 'Inicio · Texto de presentación',  def: 'Recursos, cuentos y acompañamiento pedagógico para docentes, niños y familias — para que el asombro vuelva a volar en el aula.', ml: true },
       { k: 'proposito',      label: 'Inicio · Frase “Mi propósito”',  def: 'Rescatar la memoria biocultural que se desvanece con nuestros mayores, y reavivar el asombro de los niños a través de la palabra y el juego.', ml: true },
       { k: 'quien_bio',      label: 'Quién soy · Presentación',       def: 'Soy maestra de educación inicial y primaria. Llevo años acompañando a niñas, niños y colegas en las aulas rurales del Caribe colombiano…', ml: true },
       { k: 'recursos_title', label: 'Recursos · Título',              def: 'Material listo para tu aula', ml: false },
