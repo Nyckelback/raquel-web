@@ -233,6 +233,9 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .cuento-card .meta{font-size:.8rem;color:var(--muted);margin-bottom:18px;letter-spacing:.04em}
 .cuento-card .body{font-family:var(--serif);font-size:1.08rem;line-height:1.8;color:var(--text)}
 .cuento-card .body p{margin-bottom:1em}
+/* Cuentos: en fila (horizontal) en PC, apilados en móvil — automático */
+.cuento-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;align-items:start}
+.cuento-grid .cuento-card{margin-bottom:0}
 
 /* ---------- Forms ---------- */
 .form-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:30px}

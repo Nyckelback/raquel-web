@@ -7,7 +7,7 @@
   const esc = (s) => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const fmtSize = (b) => !b ? '' : (b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB');
   const DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
-  const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 5.2A3 3 0 0 1 16 11M21 20c0-2.6-1.5-4.3-4-4.8"/></svg>';
 
   function ytId(raw) {
     const url = String(raw || '').trim(); if (!url) return '';
@@ -49,14 +49,14 @@
     }).join('\n');
   }
 
-  const LOCKSM = '<svg style="width:16px;height:16px;vertical-align:-2px;color:var(--secondary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  const LOCKSM = '<svg style="width:16px;height:16px;vertical-align:-2px;color:var(--secondary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 2.7-4.5 6-4.5s6 1.5 6 4.5"/><path d="M16 6a2.5 2.5 0 0 1 0 5"/></svg>';
   const head = (t) => `<div style="max-width:62ch;margin:46px 0 18px"><h2 style="font-size:clamp(1.5rem,3vw,2rem)">${t}</h2></div>`;
   function gate(msg) {
-    return `<div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para miembros</h3><p>${esc(msg)}</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div>`;
+    return `<div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>${esc(msg)}</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div>`;
   }
   function postCard(p) {
     const ph = p.cover_url ? `<div class="ph" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="ph"></div>`;
-    const badge = p.visibility === 'members' ? '<span class="badge-mem">Miembros</span>' : '';
+    const badge = p.visibility === 'members' ? '<span class="badge-mem">Comunidad</span>' : '';
     return `<a class="post-card" href="articulo.html?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
   }
   // Reconoce un link de Google Drive y arma las 3 variantes (ver, vista previa embebida, descarga directa)
@@ -98,7 +98,7 @@
       + `</div>`;
   }
 
-  const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu acceso está pendiente de aprobación por Raquel.') : base;
+  const gateMsg = (u, base) => u ? (u.status === 'approved' ? 'Hay contenido para otros grupos (docentes o estudiantes).' : 'Tu cuenta está en revisión; Raquel te dará acceso pronto.') : base;
 
   function galleryCard(p) {
     const loc = (p.content_json && p.content_json.location) || '';
@@ -123,9 +123,9 @@
     let html = '';
     html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
     if (restricted.length) {
-      html += head(`Solo para miembros ${LOCKSM}`);
+      html += head(`Para nuestra comunidad ${LOCKSM}`);
       if (visible.length) html += `<div class="post-grid">${visible.map(postCard).join('')}</div>`;
-      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para leer las publicaciones exclusivas.'));
+      if (visible.length < restricted.length) html += gate(gateMsg(u, 'Crea tu cuenta gratis para leer las publicaciones de la comunidad.'));
     }
     box.innerHTML = html;
   }
@@ -150,7 +150,7 @@
     html += visible.length
       ? `<div class="downloads" id="resGrid">${visible.map(resItem).join('')}</div>`
       : '<p class="note">Inicia sesión (y pide acceso a Raquel) para ver los recursos reservados.</p>';
-    if (hidden) html += gate(gateMsg(u, 'Inicia sesión (y pide acceso) para descargar los recursos exclusivos.'));
+    if (hidden) html += gate(gateMsg(u, 'Crea tu cuenta gratis para ver el material de la comunidad.'));
     box.innerHTML = html;
     // Filtrar por tema sin recargar
     box.querySelectorAll('.rchip').forEach(c => c.onclick = () => {
@@ -186,7 +186,7 @@
     if (!p || !p.published) { box.innerHTML = '<div class="container" style="max-width:60ch"><p class="note">No encontramos esta publicación.</p><p style="margin-top:14px"><a class="btn btn-light" href="cuentos.html">← Ver cuentos</a></p></div>'; return; }
     document.title = p.title + ' · La Oda de las Charamuscas';
     if (!Store.canSee(p.visibility)) {
-      box.innerHTML = `<div class="container" style="max-width:60ch"><p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,2.8rem);margin-bottom:20px">${esc(p.title)}</h1><div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para miembros</h3><p>Inicia sesión para leer esta publicación completa.</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div></div>`;
+      box.innerHTML = `<div class="container" style="max-width:60ch"><p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,2.8rem);margin-bottom:20px">${esc(p.title)}</h1><div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>Crea tu cuenta gratis para leer esta publicación.</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div></div>`;
       return;
     }
     const cover = p.cover_url ? `<img class="cover-hero" src="${esc(p.cover_url)}" alt="">` : '';
