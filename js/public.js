@@ -123,25 +123,40 @@
     return `<button type="button" class="gal-card" data-gal="${idx}" aria-label="Abrir ${esc(a.title)}">${ph}${count}<div class="gal-b"><h3>${esc(a.title)}</h3>${a.loc ? `<p class="gal-loc">📍 ${esc(a.loc)}</p>` : ''}${a.excerpt ? `<p>${esc(a.excerpt)}</p>` : ''}</div></button>`;
   }
 
-  /* ---------- Galería estilo álbum: lista → álbum (portada + descripción + cuadrícula) → visor ---------- */
+  /* ---------- Galería estilo álbum: lista → álbum (portada + descripción + cuadrícula) → visor ----------
+     El HASH manda en los 3 niveles:  (sin hash)=lista · #albumN=álbum · #albumN/M=foto N abierta.
+     Así "atrás" del navegador/trackpad cierra la foto → vuelve al álbum → vuelve a la lista, sin dejar
+     la imagen pegada. routeGallery() es la ÚNICA que muestra/oculta cada nivel según el hash. */
   let galData = [];
   let galBox = null;
   let lb = null;
+  let shownAlbum = -2;       // -2 = nada renderizado aún · -1 = lista · >=0 = índice del álbum
+  let galDidNav = false;     // ¿hubo navegación interna en esta carga? → para que "atrás" sea seguro
   const lbState = { item: 0, idx: 0 };
   const curImages = () => (galData[lbState.item] && galData[lbState.item].images) || [];
+
+  // Avanzar un nivel = nueva entrada en el historial (hashchange dispara routeGallery).
+  function goHash(h) { galDidNav = true; if (location.hash === h) routeGallery(); else location.hash = h; }
+  // Volver un nivel: si venimos navegando, "atrás" limpio; si se entró directo (link compartido), reemplaza sin trampa.
+  function goBackTo(target) {
+    if (galDidNav) history.back();
+    else { history.replaceState(null, '', target || (location.pathname + location.search)); routeGallery(); }
+  }
 
   // Vista 1: la lista de álbumes (tableros).
   function renderGalleryList() {
     if (!galBox) return;
+    shownAlbum = -1;
     galBox.innerHTML = galData.length
       ? `<div class="gallery-grid">${galData.map((a, i) => galleryCard(a, i)).join('')}</div>`
       : `<div class="res-empty"><h3>Aún no hay fotos en la galería</h3><p class="note">Pronto Raquel compartirá fotos de sus proyectos y actividades.</p></div>`;
-    galBox.querySelectorAll('[data-gal]').forEach(c => c.onclick = () => { location.hash = 'album' + c.dataset.gal; });
+    galBox.querySelectorAll('[data-gal]').forEach(c => c.onclick = () => goHash('#album' + c.dataset.gal));
   }
 
   // Vista 2: el álbum abierto (portada grande + descripción + cuadrícula de todas las fotos).
   function openAlbum(idx) {
     const a = galData[idx]; if (!galBox || !a) return;
+    shownAlbum = idx;
     const cover = a.images[0] || '';
     const thumbs = a.images.map((u, i) => `<button type="button" class="alb-ph" data-ph="${i}" style="background-image:url('${esc(u)}')" aria-label="Foto ${i + 1}"></button>`).join('');
     galBox.innerHTML = `<div class="album">
@@ -153,15 +168,25 @@
       <div class="alb-count">${a.images.length} ${a.images.length === 1 ? 'foto' : 'fotos'}</div>
       <div class="alb-grid">${thumbs}</div>
     </div>`;
-    galBox.querySelector('[data-back]').onclick = () => { location.hash = ''; };
-    galBox.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => openLightbox(idx, parseInt(b.dataset.ph, 10)));
+    galBox.querySelector('[data-back]').onclick = () => goBackTo(location.pathname + location.search);
+    galBox.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => goHash('#album' + idx + '/' + b.dataset.ph));
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  // El hash decide qué se ve (#albumN = ese álbum), para que el botón "atrás" del navegador funcione.
+  // routeGallery: el hash decide el fondo (lista/álbum) y si el visor está abierto o CERRADO.
   function routeGallery() {
-    const m = (location.hash || '').match(/^#album(\d+)$/);
-    if (m && galData[+m[1]]) openAlbum(+m[1]); else renderGalleryList();
+    if (!galBox) return;
+    const h = location.hash || '';
+    const mp = h.match(/^#album(\d+)\/(\d+)$/);   // álbum + foto (visor abierto)
+    const ma = h.match(/^#album(\d+)$/);          // solo álbum
+    const albumIdx = mp ? +mp[1] : (ma ? +ma[1] : -1);
+    // Fondo: álbum o lista.
+    if (albumIdx >= 0 && galData[albumIdx]) { if (shownAlbum !== albumIdx) openAlbum(albumIdx); }
+    else if (shownAlbum !== -1) renderGalleryList();
+    // Visor: abierto solo si el hash apunta a una foto válida; en cualquier otro caso se CIERRA
+    // (esto es lo que arregla el bug de "atrás" dejando la imagen pegada).
+    if (mp && galData[+mp[1]] && galData[+mp[1]].images[+mp[2]] != null) openLightbox(+mp[1], +mp[2]);
+    else closeLightbox();
   }
 
   // Vista 3: visor a pantalla completa (se pasan las fotos a mano: flechas, puntos, teclado o deslizando).
@@ -179,7 +204,7 @@
         <div class="lb-dots"></div>
       </div>`;
     document.body.appendChild(lb);
-    lb.querySelectorAll('[data-lbclose]').forEach(e => e.onclick = closeLightbox);
+    lb.querySelectorAll('[data-lbclose]').forEach(e => e.onclick = dismissLightbox);
     lb.querySelector('.lb-prev').onclick = () => step(-1);
     lb.querySelector('.lb-next').onclick = () => step(1);
     // Deslizar con el dedo para pasar las fotos (celular).
@@ -189,7 +214,7 @@
     wrap.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); x0 = null; }, { passive: true });
     document.addEventListener('keydown', (e) => {
       if (!lb || lb.hidden) return;
-      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'Escape') dismissLightbox();
       else if (e.key === 'ArrowRight') step(1);
       else if (e.key === 'ArrowLeft') step(-1);
     });
@@ -200,8 +225,16 @@
     lb.hidden = false; document.body.style.overflow = 'hidden';
     paintLightbox();
   }
-  function closeLightbox() { if (!lb) return; lb.hidden = true; document.body.style.overflow = ''; }
-  function step(d) { const n = curImages().length; if (!n) return; lbState.idx = (lbState.idx + d + n) % n; paintLightbox(); }
+  // Cierre "puro" (lo llama routeGallery). NO toca el historial.
+  function closeLightbox() { if (lb && !lb.hidden) { lb.hidden = true; document.body.style.overflow = ''; } }
+  // Cierre por el usuario (X / fondo / Esc): vuelve al álbum a través del historial → el hash queda consistente.
+  function dismissLightbox() { goBackTo('#album' + lbState.item); }
+  function step(d) {
+    const n = curImages().length; if (!n) return;
+    lbState.idx = (lbState.idx + d + n) % n;
+    history.replaceState(null, '', '#album' + lbState.item + '/' + lbState.idx);   // mantiene la URL en sync, sin añadir historial
+    paintLightbox();
+  }
   function paintLightbox() {
     const it = galData[lbState.item]; if (!it) return;
     const imgs = it.images, n = imgs.length, single = n <= 1;
@@ -209,7 +242,7 @@
     lb.querySelector('.lb-cap').innerHTML = `<strong>${esc(it.title)}</strong>${n > 1 ? ` · ${lbState.idx + 1}/${n}` : ''}`;
     const dots = lb.querySelector('.lb-dots');
     dots.innerHTML = single ? '' : imgs.map((_, i) => `<button class="lb-dot${i === lbState.idx ? ' on' : ''}" data-i="${i}" aria-label="Foto ${i + 1}"></button>`).join('');
-    dots.querySelectorAll('.lb-dot').forEach(b => b.onclick = () => { lbState.idx = parseInt(b.dataset.i, 10); paintLightbox(); });
+    dots.querySelectorAll('.lb-dot').forEach(b => b.onclick = () => { lbState.idx = parseInt(b.dataset.i, 10); history.replaceState(null, '', '#album' + lbState.item + '/' + lbState.idx); paintLightbox(); });
     lb.querySelector('.lb-prev').style.display = single ? 'none' : '';
     lb.querySelector('.lb-next').style.display = single ? 'none' : '';
   }
@@ -217,6 +250,7 @@
   async function mountGallery(box) {
     await Store.ready;
     galBox = box;
+    shownAlbum = -2; galDidNav = false;
     const items = await Store.posts.list({ type: 'galeria', publishedOnly: true });
     galData = items.map(p => ({ title: p.title, loc: (p.content_json && p.content_json.location) || '', excerpt: p.excerpt || '', images: galImages(p) }));
     ensureLightbox();
