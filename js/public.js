@@ -109,17 +109,82 @@
       + `<div class="downloads">${items.map(resItem).join('')}</div></div>`;
   }
 
-  function galleryCard(p) {
-    const loc = (p.content_json && p.content_json.location) || '';
-    const ph = p.cover_url ? `<div class="gal-img" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="gal-img"></div>`;
-    return `<div class="gal-card">${ph}<div class="gal-b"><h3>${esc(p.title)}</h3>${loc ? `<p class="gal-loc">📍 ${esc(loc)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}</div></div>`;
+  // Un proyecto de galería puede tener VARIAS fotos (content_json.images). Compat: si no, usa la portada.
+  function galImages(p) {
+    const arr = (p.content_json && Array.isArray(p.content_json.images)) ? p.content_json.images.filter(Boolean) : [];
+    if (arr.length) return arr;
+    return p.cover_url ? [p.cover_url] : [];
   }
+  function galleryCard(p, idx) {
+    const loc = (p.content_json && p.content_json.location) || '';
+    const imgs = galImages(p);
+    const cover = p.cover_url || imgs[0] || '';
+    const ph = cover ? `<div class="gal-img" style="background-image:url('${esc(cover)}')"></div>` : `<div class="gal-img"></div>`;
+    const count = imgs.length > 1 ? `<span class="gal-count">▦ ${imgs.length} fotos</span>` : '';
+    return `<button type="button" class="gal-card" data-gal="${idx}" aria-label="Ver ${esc(p.title)}">${ph}${count}<div class="gal-b"><h3>${esc(p.title)}</h3>${loc ? `<p class="gal-loc">📍 ${esc(loc)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}</div></button>`;
+  }
+
+  /* ---------- Visor / álbum de galería (lightbox con paso automático) ---------- */
+  let galData = [];
+  let lb = null;
+  const lbState = { item: 0, idx: 0, timer: null };
+  function curImages() { return (galData[lbState.item] && galData[lbState.item].images) || []; }
+  function ensureLightbox() {
+    if (lb) return;
+    lb = document.createElement('div');
+    lb.className = 'lightbox'; lb.hidden = true;
+    lb.innerHTML = `<div class="lb-back" data-lbclose></div>
+      <button class="lb-btn lb-close" data-lbclose aria-label="Cerrar">✕</button>
+      <button class="lb-btn lb-nav lb-prev" aria-label="Foto anterior">‹</button>
+      <button class="lb-btn lb-nav lb-next" aria-label="Foto siguiente">›</button>
+      <div class="lb-stage" role="dialog" aria-modal="true" aria-label="Galería de fotos">
+        <div class="lb-imgwrap"><img class="lb-img" alt=""></div>
+        <p class="lb-cap"></p>
+        <div class="lb-dots"></div>
+      </div>`;
+    document.body.appendChild(lb);
+    lb.querySelectorAll('[data-lbclose]').forEach(e => e.onclick = closeLightbox);
+    lb.querySelector('.lb-prev').onclick = () => step(-1);
+    lb.querySelector('.lb-next').onclick = () => step(1);
+    document.addEventListener('keydown', (e) => {
+      if (!lb || lb.hidden) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowRight') step(1);
+      else if (e.key === 'ArrowLeft') step(-1);
+    });
+  }
+  function openLightbox(itemIdx) {
+    ensureLightbox();
+    lbState.item = itemIdx; lbState.idx = 0;
+    lb.hidden = false; document.body.style.overflow = 'hidden';
+    paintLightbox(); startAuto();
+  }
+  function closeLightbox() { if (!lb) return; lb.hidden = true; document.body.style.overflow = ''; stopAuto(); }
+  function step(d) { const n = curImages().length; if (!n) return; lbState.idx = (lbState.idx + d + n) % n; paintLightbox(); startAuto(); }
+  function autoNext() { const n = curImages().length; if (n > 1) { lbState.idx = (lbState.idx + 1) % n; paintLightbox(); } }
+  function startAuto() { stopAuto(); if (curImages().length > 1) lbState.timer = setInterval(autoNext, 4500); }
+  function stopAuto() { if (lbState.timer) { clearInterval(lbState.timer); lbState.timer = null; } }
+  function paintLightbox() {
+    const it = galData[lbState.item]; if (!it) return;
+    const imgs = it.images, n = imgs.length, single = n <= 1;
+    lb.querySelector('.lb-img').src = imgs[lbState.idx] || '';
+    lb.querySelector('.lb-cap').innerHTML = `<strong>${esc(it.title)}</strong>${it.loc ? ` · 📍 ${esc(it.loc)}` : ''}${n > 1 ? ` · ${lbState.idx + 1}/${n}` : ''}`;
+    const dots = lb.querySelector('.lb-dots');
+    dots.innerHTML = single ? '' : imgs.map((_, i) => `<button class="lb-dot${i === lbState.idx ? ' on' : ''}" data-i="${i}" aria-label="Foto ${i + 1}"></button>`).join('');
+    dots.querySelectorAll('.lb-dot').forEach(b => b.onclick = () => { lbState.idx = parseInt(b.dataset.i, 10); paintLightbox(); startAuto(); });
+    lb.querySelector('.lb-prev').style.display = single ? 'none' : '';
+    lb.querySelector('.lb-next').style.display = single ? 'none' : '';
+  }
+
   async function mountGallery(box) {
     await Store.ready;
     const items = await Store.posts.list({ type: 'galeria', publishedOnly: true });
+    galData = items.map(p => ({ title: p.title, loc: (p.content_json && p.content_json.location) || '', images: galImages(p) }));
     box.innerHTML = items.length
-      ? `<div class="gallery-grid">${items.map(galleryCard).join('')}</div>`
+      ? `<div class="gallery-grid">${items.map((p, i) => galleryCard(p, i)).join('')}</div>`
       : `<div class="res-empty"><h3>Aún no hay fotos en la galería</h3><p class="note">Pronto Raquel compartirá fotos de sus proyectos y actividades.</p></div>`;
+    box.querySelectorAll('[data-gal]').forEach(c => c.onclick = () => openLightbox(parseInt(c.dataset.gal, 10)));
+    ensureLightbox();
   }
 
   async function mountCuentos(box) {

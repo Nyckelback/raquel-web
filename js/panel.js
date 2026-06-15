@@ -346,9 +346,9 @@
     seg.innerHTML = `
       <div class="phead"><div><h1>Galería</h1><p class="note">Fotos de tus proyectos y actividades. Cada una con título, lugar y descripción.</p></div></div>
       <div class="editor-box" style="margin-bottom:22px">
-        <div class="field"><label class="lab">Foto</label>
-          <div><label class="btn btn-light" style="cursor:pointer">Elegir foto<input id="galFoto" type="file" accept="image/*" hidden></label> <span id="galFotoMsg" class="note"></span></div>
-          <div id="galPrev" class="cms-thumb" style="display:none;margin-top:8px"></div></div>
+        <div class="field"><label class="lab">Fotos <span style="font-weight:400;color:var(--muted)">(puedes elegir varias para el mismo proyecto)</span></label>
+          <div><label class="btn btn-light" style="cursor:pointer">Elegir fotos<input id="galFoto" type="file" accept="image/*" multiple hidden></label> <span id="galFotoMsg" class="note"></span></div>
+          <div id="galPrev" class="gal-thumbs" style="margin-top:10px"></div></div>
         <div class="grid2">
           <div class="field"><label class="lab">Título</label><input id="galTitle" type="text" placeholder="Ej: Proyecto de aula en el Monte Firme"></div>
           <div class="field"><label class="lab">Lugar (opcional)</label><input id="galLoc" type="text" placeholder="Ej: Corozal, Sucre"></div>
@@ -358,13 +358,22 @@
         <div class="inline"><button class="btn btn-primary" id="galSave">Subir a la galería</button><span id="galMsg" class="note"></span></div>
       </div>
       <div id="galList"></div>`;
-    let imgUrl = '';
+    let galImgs = [];
+    function paintGalThumbs() {
+      const pv = $('#galPrev');
+      pv.innerHTML = galImgs.map((u, i) => `<div class="gal-thumb" style="background-image:url('${u}')"><button type="button" class="gal-thumb-x" data-rm="${i}" aria-label="Quitar">✕</button></div>`).join('');
+      pv.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { galImgs.splice(parseInt(b.dataset.rm, 10), 1); paintGalThumbs(); });
+    }
     $('#galFoto').onchange = async (e) => {
-      const f = e.target.files[0]; if (!f) return;
-      $('#galFotoMsg').textContent = 'Subiendo…';
-      const r = await Store.uploadImage(await optimizeImage(f));
-      if (!r || r.error || !r.url) { $('#galFotoMsg').textContent = 'Error: ' + ((r && r.error) || 'no se pudo'); return; }
-      imgUrl = r.url; const pv = $('#galPrev'); pv.style.display = ''; pv.style.backgroundImage = `url('${imgUrl}')`; $('#galFotoMsg').textContent = '✓ Foto lista';
+      const files = [...e.target.files]; if (!files.length) return;
+      $('#galFotoMsg').textContent = `Subiendo ${files.length} foto(s)…`;
+      for (const f of files) {
+        const r = await Store.uploadImage(await optimizeImage(f));
+        if (r && r.url) galImgs.push(r.url);
+      }
+      $('#galFotoMsg').textContent = `✓ ${galImgs.length} foto(s) lista(s)`;
+      paintGalThumbs();
+      e.target.value = '';
     };
     const list = $('#galList');
     if (!items.length) list.innerHTML = '<p class="note">Aún no hay fotos en la galería.</p>';
@@ -372,16 +381,18 @@
       const loc = (p.content_json && p.content_json.location) || '';
       const row = document.createElement('div'); row.className = 'prow';
       const thumb = p.cover_url ? `<div class="pavatar" style="background:url('${esc(p.cover_url)}') center/cover;border-radius:8px"></div>` : '';
-      row.innerHTML = `${thumb}<div class="grow"><strong>${esc(p.title)}</strong><small>${esc(loc)}${p.excerpt ? ' · ' + esc(p.excerpt) : ''}</small></div><button class="iconbtn danger" data-del="${p.id}">Eliminar</button>`;
+      const nimg = (p.content_json && Array.isArray(p.content_json.images)) ? p.content_json.images.length : (p.cover_url ? 1 : 0);
+      const cnt = nimg > 1 ? ` · ${nimg} fotos` : '';
+      row.innerHTML = `${thumb}<div class="grow"><strong>${esc(p.title)}</strong><small>${esc(loc)}${cnt}${p.excerpt ? ' · ' + esc(p.excerpt) : ''}</small></div><button class="iconbtn danger" data-del="${p.id}">Eliminar</button>`;
       list.appendChild(row);
     });
     list.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if (confirm('¿Eliminar esta foto?')) { await Store.posts.remove(b.dataset.del); renderGaleria(); } });
     $('#galSave').onclick = async () => {
       const title = $('#galTitle').value.trim();
       if (!title) return alert('Ponle un título.');
-      if (!imgUrl) return alert('Elige una foto.');
-      if (!$('#galConsent').checked) return alert('Marca que tienes permiso de las familias para publicar la foto.');
-      const payload = { type: 'galeria', title, excerpt: $('#galDesc').value.trim(), cover_url: imgUrl, content_json: { location: $('#galLoc').value.trim() }, visibility: 'public', published: true };
+      if (!galImgs.length) return alert('Elige al menos una foto.');
+      if (!$('#galConsent').checked) return alert('Marca que tienes permiso de las familias para publicar las fotos.');
+      const payload = { type: 'galeria', title, excerpt: $('#galDesc').value.trim(), cover_url: galImgs[0], content_json: { location: $('#galLoc').value.trim(), images: galImgs }, visibility: 'public', published: true };
       $('#galMsg').textContent = 'Guardando…'; $('#galSave').disabled = true;
       const r = await Store.posts.save(payload);
       $('#galSave').disabled = false;
