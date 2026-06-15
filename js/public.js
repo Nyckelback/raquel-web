@@ -115,20 +115,56 @@
     if (arr.length) return arr;
     return p.cover_url ? [p.cover_url] : [];
   }
-  function galleryCard(p, idx) {
-    const loc = (p.content_json && p.content_json.location) || '';
-    const imgs = galImages(p);
-    const cover = p.cover_url || imgs[0] || '';
+  // Tarjeta de ÁLBUM (tablero) en la lista de la galería.
+  function galleryCard(a, idx) {
+    const cover = a.images[0] || '';
     const ph = cover ? `<div class="gal-img" style="background-image:url('${esc(cover)}')"></div>` : `<div class="gal-img"></div>`;
-    const count = imgs.length > 1 ? `<span class="gal-count">▦ ${imgs.length} fotos</span>` : '';
-    return `<button type="button" class="gal-card" data-gal="${idx}" aria-label="Ver ${esc(p.title)}">${ph}${count}<div class="gal-b"><h3>${esc(p.title)}</h3>${loc ? `<p class="gal-loc">📍 ${esc(loc)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}</div></button>`;
+    const count = a.images.length > 1 ? `<span class="gal-count">▦ ${a.images.length} fotos</span>` : '';
+    return `<button type="button" class="gal-card" data-gal="${idx}" aria-label="Abrir ${esc(a.title)}">${ph}${count}<div class="gal-b"><h3>${esc(a.title)}</h3>${a.loc ? `<p class="gal-loc">📍 ${esc(a.loc)}</p>` : ''}${a.excerpt ? `<p>${esc(a.excerpt)}</p>` : ''}</div></button>`;
   }
 
-  /* ---------- Visor / álbum de galería (lightbox con paso automático) ---------- */
+  /* ---------- Galería estilo álbum: lista → álbum (portada + descripción + cuadrícula) → visor ---------- */
   let galData = [];
+  let galBox = null;
   let lb = null;
-  const lbState = { item: 0, idx: 0, timer: null };
-  function curImages() { return (galData[lbState.item] && galData[lbState.item].images) || []; }
+  const lbState = { item: 0, idx: 0 };
+  const curImages = () => (galData[lbState.item] && galData[lbState.item].images) || [];
+
+  // Vista 1: la lista de álbumes (tableros).
+  function renderGalleryList() {
+    if (!galBox) return;
+    galBox.innerHTML = galData.length
+      ? `<div class="gallery-grid">${galData.map((a, i) => galleryCard(a, i)).join('')}</div>`
+      : `<div class="res-empty"><h3>Aún no hay fotos en la galería</h3><p class="note">Pronto Raquel compartirá fotos de sus proyectos y actividades.</p></div>`;
+    galBox.querySelectorAll('[data-gal]').forEach(c => c.onclick = () => { location.hash = 'album' + c.dataset.gal; });
+  }
+
+  // Vista 2: el álbum abierto (portada grande + descripción + cuadrícula de todas las fotos).
+  function openAlbum(idx) {
+    const a = galData[idx]; if (!galBox || !a) return;
+    const cover = a.images[0] || '';
+    const thumbs = a.images.map((u, i) => `<button type="button" class="alb-ph" data-ph="${i}" style="background-image:url('${esc(u)}')" aria-label="Foto ${i + 1}"></button>`).join('');
+    galBox.innerHTML = `<div class="album">
+      <button type="button" class="alb-back" data-back>← Galería</button>
+      ${cover ? `<button type="button" class="alb-cover" data-ph="0" style="background-image:url('${esc(cover)}')" aria-label="Ver la portada en grande"></button>` : ''}
+      <h2 class="alb-title">${esc(a.title)}</h2>
+      ${a.loc ? `<p class="alb-loc">📍 ${esc(a.loc)}</p>` : ''}
+      ${a.excerpt ? `<p class="alb-about">${esc(a.excerpt)}</p>` : ''}
+      <div class="alb-count">${a.images.length} ${a.images.length === 1 ? 'foto' : 'fotos'}</div>
+      <div class="alb-grid">${thumbs}</div>
+    </div>`;
+    galBox.querySelector('[data-back]').onclick = () => { location.hash = ''; };
+    galBox.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => openLightbox(idx, parseInt(b.dataset.ph, 10)));
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // El hash decide qué se ve (#albumN = ese álbum), para que el botón "atrás" del navegador funcione.
+  function routeGallery() {
+    const m = (location.hash || '').match(/^#album(\d+)$/);
+    if (m && galData[+m[1]]) openAlbum(+m[1]); else renderGalleryList();
+  }
+
+  // Vista 3: visor a pantalla completa (se pasan las fotos a mano: flechas, puntos, teclado o deslizando).
   function ensureLightbox() {
     if (lb) return;
     lb = document.createElement('div');
@@ -137,7 +173,7 @@
       <button class="lb-btn lb-close" data-lbclose aria-label="Cerrar">✕</button>
       <button class="lb-btn lb-nav lb-prev" aria-label="Foto anterior">‹</button>
       <button class="lb-btn lb-nav lb-next" aria-label="Foto siguiente">›</button>
-      <div class="lb-stage" role="dialog" aria-modal="true" aria-label="Galería de fotos">
+      <div class="lb-stage" role="dialog" aria-modal="true" aria-label="Foto de la galería">
         <div class="lb-imgwrap"><img class="lb-img" alt=""></div>
         <p class="lb-cap"></p>
         <div class="lb-dots"></div>
@@ -146,6 +182,11 @@
     lb.querySelectorAll('[data-lbclose]').forEach(e => e.onclick = closeLightbox);
     lb.querySelector('.lb-prev').onclick = () => step(-1);
     lb.querySelector('.lb-next').onclick = () => step(1);
+    // Deslizar con el dedo para pasar las fotos (celular).
+    let x0 = null;
+    const wrap = lb.querySelector('.lb-imgwrap');
+    wrap.addEventListener('touchstart', e => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    wrap.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); x0 = null; }, { passive: true });
     document.addEventListener('keydown', (e) => {
       if (!lb || lb.hidden) return;
       if (e.key === 'Escape') closeLightbox();
@@ -153,38 +194,34 @@
       else if (e.key === 'ArrowLeft') step(-1);
     });
   }
-  function openLightbox(itemIdx) {
+  function openLightbox(itemIdx, startIdx) {
     ensureLightbox();
-    lbState.item = itemIdx; lbState.idx = 0;
+    lbState.item = itemIdx; lbState.idx = startIdx || 0;
     lb.hidden = false; document.body.style.overflow = 'hidden';
-    paintLightbox(); startAuto();
+    paintLightbox();
   }
-  function closeLightbox() { if (!lb) return; lb.hidden = true; document.body.style.overflow = ''; stopAuto(); }
-  function step(d) { const n = curImages().length; if (!n) return; lbState.idx = (lbState.idx + d + n) % n; paintLightbox(); startAuto(); }
-  function autoNext() { const n = curImages().length; if (n > 1) { lbState.idx = (lbState.idx + 1) % n; paintLightbox(); } }
-  function startAuto() { stopAuto(); if (curImages().length > 1) lbState.timer = setInterval(autoNext, 4500); }
-  function stopAuto() { if (lbState.timer) { clearInterval(lbState.timer); lbState.timer = null; } }
+  function closeLightbox() { if (!lb) return; lb.hidden = true; document.body.style.overflow = ''; }
+  function step(d) { const n = curImages().length; if (!n) return; lbState.idx = (lbState.idx + d + n) % n; paintLightbox(); }
   function paintLightbox() {
     const it = galData[lbState.item]; if (!it) return;
     const imgs = it.images, n = imgs.length, single = n <= 1;
     lb.querySelector('.lb-img').src = imgs[lbState.idx] || '';
-    lb.querySelector('.lb-cap').innerHTML = `<strong>${esc(it.title)}</strong>${it.loc ? ` · 📍 ${esc(it.loc)}` : ''}${n > 1 ? ` · ${lbState.idx + 1}/${n}` : ''}`;
+    lb.querySelector('.lb-cap').innerHTML = `<strong>${esc(it.title)}</strong>${n > 1 ? ` · ${lbState.idx + 1}/${n}` : ''}`;
     const dots = lb.querySelector('.lb-dots');
     dots.innerHTML = single ? '' : imgs.map((_, i) => `<button class="lb-dot${i === lbState.idx ? ' on' : ''}" data-i="${i}" aria-label="Foto ${i + 1}"></button>`).join('');
-    dots.querySelectorAll('.lb-dot').forEach(b => b.onclick = () => { lbState.idx = parseInt(b.dataset.i, 10); paintLightbox(); startAuto(); });
+    dots.querySelectorAll('.lb-dot').forEach(b => b.onclick = () => { lbState.idx = parseInt(b.dataset.i, 10); paintLightbox(); });
     lb.querySelector('.lb-prev').style.display = single ? 'none' : '';
     lb.querySelector('.lb-next').style.display = single ? 'none' : '';
   }
 
   async function mountGallery(box) {
     await Store.ready;
+    galBox = box;
     const items = await Store.posts.list({ type: 'galeria', publishedOnly: true });
-    galData = items.map(p => ({ title: p.title, loc: (p.content_json && p.content_json.location) || '', images: galImages(p) }));
-    box.innerHTML = items.length
-      ? `<div class="gallery-grid">${items.map((p, i) => galleryCard(p, i)).join('')}</div>`
-      : `<div class="res-empty"><h3>Aún no hay fotos en la galería</h3><p class="note">Pronto Raquel compartirá fotos de sus proyectos y actividades.</p></div>`;
-    box.querySelectorAll('[data-gal]').forEach(c => c.onclick = () => openLightbox(parseInt(c.dataset.gal, 10)));
+    galData = items.map(p => ({ title: p.title, loc: (p.content_json && p.content_json.location) || '', excerpt: p.excerpt || '', images: galImages(p) }));
     ensureLightbox();
+    routeGallery();
+    window.addEventListener('hashchange', routeGallery);
   }
 
   async function mountCuentos(box) {

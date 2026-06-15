@@ -325,6 +325,21 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
   .res-filters{gap:10px}
   .acct-link{min-height:44px;display:inline-flex;align-items:center;padding:6px}}
 
+/* ---------- Galería: vista de ÁLBUM (tablero estilo Instagram) ---------- */
+.album{max-width:860px;margin:0 auto}
+.alb-back{background:none;border:0;color:var(--primary);font:inherit;font-size:.92rem;cursor:pointer;padding:6px 0;margin-bottom:14px}
+.alb-back:hover{text-decoration:underline}
+.alb-cover{display:block;width:100%;aspect-ratio:16/10;border:0;padding:0;border-radius:18px;background:var(--chip) center/cover no-repeat;cursor:zoom-in;box-shadow:var(--shadow);transition:transform .15s}
+.alb-cover:hover{transform:translateY(-2px)}
+.alb-title{font-family:var(--serif);font-weight:500;font-size:clamp(1.6rem,4vw,2.4rem);color:var(--ink);margin:20px 0 4px;text-align:center}
+.alb-loc{color:var(--primary);font-size:.9rem;text-align:center;margin-bottom:10px}
+.alb-about{color:var(--text);max-width:60ch;margin:0 auto;text-align:center;line-height:1.6}
+.alb-count{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;margin:22px 0 12px}
+.alb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.alb-ph{aspect-ratio:1/1;border:0;padding:0;border-radius:10px;background:var(--chip) center/cover no-repeat;cursor:pointer;transition:opacity .15s,transform .15s}
+.alb-ph:hover{opacity:.9;transform:scale(.98)}
+@media(max-width:560px){.alb-cover{aspect-ratio:4/3;border-radius:14px}.alb-grid{gap:4px}.alb-ph{border-radius:7px}}
+
 /* ---------- Galería: miniaturas en el panel (subir varias fotos) ---------- */
 .gal-thumbs{display:flex;flex-wrap:wrap;gap:8px}
 .gal-thumb{position:relative;width:88px;height:66px;border-radius:8px;background:var(--chip) center/cover no-repeat;border:1px solid var(--border)}
