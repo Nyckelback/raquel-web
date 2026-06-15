@@ -8,10 +8,10 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=22">
+  <link rel="stylesheet" href="css/styles.css?v=23">
 </head>
 <body data-page="cuenta">
-  <div data-include="partials/header.html?v=22"></div>
+  <div data-include="partials/header.html?v=23"></div>
 
   <section class="section">
     <div class="container auth-wrap">
@@ -33,11 +33,11 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=22"></div>
+  <div data-include="partials/footer.html?v=23"></div>
 
-  <script src="js/config.js?v=22"></script>
-  <script src="js/store.js?v=22"></script>
-  <script src="js/main.js?v=22"></script>
+  <script src="js/config.js?v=23"></script>
+  <script src="js/store.js?v=23"></script>
+  <script src="js/main.js?v=23"></script>
   <script>
     (async () => {
       await Store.ready;
@@ -52,13 +52,9 @@
       $('tipo').value = u.tipo || 'otro';
       let estadoTxt;
       if (u.role === 'admin') estadoTxt = 'Administradora';
-      else if (u.status === 'approved') {
-        estadoTxt = u.tipo === 'docente' ? '✓ Tu cuenta está aprobada. Ya ves el material reservado para docentes.'
-          : u.tipo === 'estudiante' ? '✓ Tu cuenta está aprobada. Ya ves el material reservado para estudiantes.'
-          : '✓ Tu cuenta está aprobada. Casi todo el material es abierto y ya lo tienes; si quieres apoyar a tu hijo en casa, escríbele a Raquel y te orienta.';
-      } else {
-        estadoTxt = 'Pendiente: mientras tanto ya puedes ver y descargar todo lo abierto. Cuando Raquel apruebe tu acceso, verás también el material reservado para tu grupo.';
-      }
+      else estadoTxt = u.tipo === 'docente' ? 'Tienes acceso al material para docentes, además de todo lo abierto.'
+        : u.tipo === 'estudiante' ? 'Tienes acceso al material para estudiantes, además de todo lo abierto.'
+        : 'Tienes acceso a todo el material abierto del sitio. Si quieres apoyar a tu hijo en casa, escríbele a Raquel y te orienta.';
       $('estado').textContent = estadoTxt;
 
       async function shrink(file) {

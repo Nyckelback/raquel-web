@@ -210,7 +210,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .dl-item .dl-ico svg{width:22px;height:22px}
 .dl-item .dl-meta{flex:1}
 .dl-item .dl-meta strong{font-family:var(--serif);font-weight:500;font-size:1.05rem;color:var(--ink);display:block}
-.dl-item .dl-meta span{font-size:.84rem;color:var(--muted)}
+.dl-item .dl-meta span{font-size:.84rem;color:var(--muted);line-height:1.4;display:block;margin-top:3px}
 .dl-tag{font-size:.72rem;letter-spacing:.04em;color:var(--eyebrow);background:var(--chip);padding:3px 10px;border-radius:20px;white-space:nowrap}
 .dl-card{display:block}
 .dl-acts{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}

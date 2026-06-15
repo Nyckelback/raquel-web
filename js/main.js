@@ -106,7 +106,7 @@ async function initAccount(){
   const render = (u) => {
     if (!u) { slot.innerHTML = '<a class="acct-link" href="entrar.html">Entrar</a>'; return; }
     const ini = (u.full_name || u.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-    const st = u.role === 'admin' ? 'Administradora' : (u.status === 'approved' ? 'Miembro' : 'Pendiente de aprobación');
+    const st = u.role === 'admin' ? 'Administradora' : 'Miembro';
     const panel = u.role === 'admin' ? '<a href="panel.html"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Panel</a>' : '';
     const ava = u.avatar_url ? `<img src="${u.avatar_url}" alt="">` : ini;
     slot.innerHTML = `<button class="acct-btn" id="acctBtn" aria-label="Mi cuenta"><span class="acct-ava">${ava}</span></button>

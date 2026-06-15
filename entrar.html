@@ -9,17 +9,17 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=22">
+  <link rel="stylesheet" href="css/styles.css?v=23">
 </head>
 <body data-page="entrar">
-  <div data-include="partials/header.html?v=22"></div>
+  <div data-include="partials/header.html?v=23"></div>
 
   <section class="section">
     <div class="container auth-wrap">
       <div style="text-align:center;margin-bottom:24px">
         <p class="eyebrow" style="display:block">La Oda de las Charamuscas</p>
         <h1 style="font-size:1.9rem">Tu espacio</h1>
-        <p class="note">Casi todo en La Oda de las Charamuscas es abierto y no necesita cuenta. Crea una solo si quieres ver el contenido reservado para docentes y estudiantes — Raquel revisa y aprueba tu acceso (es gratis).</p>
+        <p class="note">Casi todo en La Oda de las Charamuscas es abierto y no necesita cuenta. Crea una solo si quieres ver el contenido reservado para docentes y estudiantes — es gratis y entras al instante.</p>
       </div>
 
       <div class="auth-card">
@@ -55,11 +55,11 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=22"></div>
+  <div data-include="partials/footer.html?v=23"></div>
 
-  <script src="js/config.js?v=22"></script>
-  <script src="js/store.js?v=22"></script>
-  <script src="js/main.js?v=22"></script>
+  <script src="js/config.js?v=23"></script>
+  <script src="js/store.js?v=23"></script>
+  <script src="js/main.js?v=23"></script>
   <script>
     (async () => {
       await Store.ready;
@@ -104,8 +104,7 @@
         } else {
           msg.innerHTML = '<div style="text-align:center">'
             + '<strong style="font-size:1.2rem;display:block;margin-bottom:10px;color:var(--ink)">✓ ¡Cuenta creada!</strong>'
-            + '<p style="margin:0 0 10px">Ya puedes ver y descargar todo lo abierto del sitio.</p>'
-            + '<p style="margin:0 0 18px;color:var(--muted);font-size:.92rem;line-height:1.55">Para el material reservado para docentes y estudiantes, Raquel revisa tu cuenta y te da acceso — te avisa por correo. Suele tardar uno o dos días.</p>'
+            + '<p style="margin:0 0 18px">Ya tienes acceso a todo lo abierto y al material de tu grupo.</p>'
             + '<a href="index.html" class="btn btn-primary" style="justify-content:center">Ir al inicio →</a>'
             + '</div>';
         }

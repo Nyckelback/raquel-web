@@ -100,7 +100,6 @@
   }
 
   const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5S4 16 4 9.8A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 8 2.8C20 16 12 20.5 12 20.5z"/></svg>';
-  const isApproved = (u) => u && (u.role === 'admin' || u.status === 'approved');
   // Bloque "Para ti": material que Raquel compartió en privado con esta persona, resaltado y arriba del todo.
   function foryouBlock(items, u) {
     const first = u && (u.full_name || '').trim().split(/\s+/)[0];
@@ -132,16 +131,14 @@
     const u = Store.auth.user();
     let html = '';
     html += pub.length ? `<div class="post-grid">${pub.map(postCard).join('')}</div>` : '<p class="note">Próximamente más publicaciones.</p>';
-    // Lo reservado que el visitante SÍ puede ver (miembro aprobado).
+    // Lo reservado que el visitante SÍ puede ver (miembro registrado de ese grupo).
     if (visible.length) {
       html += head(`Para nuestra comunidad ${LOCKSM}`);
       html += `<div class="post-grid">${visible.map(postCard).join('')}</div>`;
     }
-    // Invitación a quien aún no tiene acceso (anónimo o cuenta en revisión).
-    if (!isApproved(u)) {
-      html += gate(u
-        ? 'Tu cuenta está en revisión. En cuanto Raquel apruebe tu acceso, aquí verás también los cuentos y artículos reservados para la comunidad.'
-        : 'Crea tu cuenta gratis para leer también los cuentos y artículos reservados para docentes y estudiantes. Raquel revisa tu acceso y te avisa por correo.');
+    // Invitación a quien aún no se ha registrado (los registrados ya ven lo de su grupo al instante).
+    if (!u) {
+      html += gate('Crea tu cuenta gratis para leer también los cuentos y artículos reservados para docentes y estudiantes. Es gratis y entras al instante.');
     }
     box.innerHTML = html;
   }
@@ -167,13 +164,9 @@
         + cats.map(c => `<button class="rchip" type="button" data-cat="${esc(c)}">${esc(c)}</button>`).join('') + `</div>`;
     }
     if (normal.length) html += `<div class="downloads" id="resGrid">${normal.map(resItem).join('')}</div>`;
-    // 3) Invitación honesta a quien aún no tiene acceso al material reservado.
-    if (!isApproved(u)) {
-      html += gate(u
-        ? (priv.length
-            ? 'Tu material personal ya está arriba. El resto del contenido para docentes y estudiantes se habilita cuando Raquel apruebe tu cuenta — todo lo abierto ya lo puedes usar.'
-            : 'Tu cuenta está en revisión. Mientras tanto ya puedes descargar todo lo abierto; el material reservado para docentes y estudiantes se habilita cuando Raquel apruebe tu acceso.')
-        : 'Todo esto es abierto y gratis, sin registrarte. Crea tu cuenta gratis si además quieres el material reservado para docentes y estudiantes — Raquel revisa tu acceso y te avisa por correo.');
+    // 3) Invitación honesta a quien aún no se ha registrado.
+    if (!u) {
+      html += gate('Todo esto es abierto y gratis, sin registrarte. Crea tu cuenta gratis si además quieres el material reservado para docentes y estudiantes — es gratis y entras al instante.');
     }
     box.innerHTML = html;
     // Filtrar por tema sin recargar

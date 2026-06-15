@@ -10,7 +10,7 @@ create table if not exists public.profiles (
   email text,
   full_name text,
   role text not null default 'member',     -- 'admin' | 'member'
-  status text not null default 'pending',   -- 'approved' | 'pending'
+  status text not null default 'approved',  -- sin paso de aprobación manual (todos entran al instante)
   tipo text not null default 'otro',        -- 'docente' | 'estudiante' | 'familia' | 'otro'
   avatar_url text,
   created_at timestamptz default now()
@@ -21,7 +21,7 @@ create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
 begin
   insert into public.profiles (id, email, full_name, role, status, tipo)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', new.email), 'member', 'pending', coalesce(new.raw_user_meta_data->>'tipo', 'otro'))
+  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', new.email), 'member', 'approved', coalesce(new.raw_user_meta_data->>'tipo', 'otro'))
   on conflict (id) do nothing;
   return new;
 end; $$;

@@ -47,13 +47,13 @@
   /* ============================ RESUMEN ============================ */
   async function renderResumen() {
     const [posts, res, studs, leads] = await Promise.all([Store.posts.list(), Store.resources.list(), Store.students.list(), Store.leads.list()]);
-    const pend = studs.filter(s => s.status !== 'approved').length;
+    const totalPeople = studs.length;
     $('#seg-resumen').innerHTML = `
       <div class="phead"><div><h1>Hola, ${esc(user.full_name.split(' ')[0])} 🌿</h1><p class="note">Este es tu nido. Sube contenido y gestiona tu comunidad.</p></div></div>
       <div class="pcards">
         <div class="pstat"><div class="n">${posts.length}</div><div class="l">Cuentos y artículos</div></div>
         <div class="pstat"><div class="n">${res.length}</div><div class="l">Recursos</div></div>
-        <div class="pstat"><div class="n">${pend}</div><div class="l">Estudiantes por aprobar</div></div>
+        <div class="pstat"><div class="n">${totalPeople}</div><div class="l">Personas registradas</div></div>
         <div class="pstat"><div class="n">${leads.length}</div><div class="l">Mensajes recibidos</div></div>
       </div>
       <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
@@ -395,41 +395,36 @@
     const seg = $('#seg-estudiantes');
     const studs = await Store.students.list();
     seg.innerHTML = `
-      <div class="phead"><div><h1>Personas</h1><p class="note">Aprueba accesos y organiza por tipo. Busca por nombre o correo.</p></div></div>
+      <div class="phead"><div><h1>Personas</h1><p class="note">Las personas registradas. Organízalas por tipo y compárteles material privado. Busca por nombre o correo.</p></div></div>
       <input id="stuSearch" class="psearch" type="search" placeholder="Buscar por nombre o correo…" style="max-width:460px;margin-bottom:16px">
       <div class="pfilters" id="stuFilters">
         <button class="pchip active" data-f="all">Todos</button>
         <button class="pchip" data-f="docente">Docentes</button>
         <button class="pchip" data-f="estudiante">Estudiantes</button>
         <button class="pchip" data-f="familia">Familias</button>
-        <button class="pchip" data-f="pending">Pendientes</button>
       </div>
       <div id="stuList"></div>`;
     let filter = 'all', q = '';
     function draw() {
       const list = $('#stuList');
       const rows = studs
-        .filter(s => filter === 'pending' ? s.status !== 'approved' : (filter === 'all' ? true : s.tipo === filter))
+        .filter(s => filter === 'all' ? true : s.tipo === filter)
         .filter(s => (s.full_name || '').toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
       if (!rows.length) { list.innerHTML = '<p class="note">Nadie coincide con la búsqueda.</p>'; return; }
       list.innerHTML = '';
       rows.forEach(s => {
-        const approved = s.status === 'approved';
         const ini = (s.full_name || s.email || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
         const ava = s.avatar_url ? `<img class="pavatar" src="${esc(s.avatar_url)}" alt="">` : `<div class="pavatar" style="display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--ink)">${ini}</div>`;
         const row = document.createElement('div'); row.className = 'prow';
-        row.innerHTML = `${ava}<div class="grow"><strong>${esc(s.full_name || s.email)}</strong><small>${esc(s.email)} · ${approved ? 'Aprobado' : 'Pendiente'}</small></div>
+        row.innerHTML = `${ava}<div class="grow"><strong>${esc(s.full_name || s.email)}</strong><small>${esc(s.email)}</small></div>
           <select class="iconbtn" data-tipo="${s.id}" title="Tipo">
             <option value="docente"${s.tipo === 'docente' ? ' selected' : ''}>Docente</option>
             <option value="estudiante"${s.tipo === 'estudiante' ? ' selected' : ''}>Estudiante</option>
             <option value="familia"${s.tipo === 'familia' ? ' selected' : ''}>Familia</option>
             <option value="otro"${(!s.tipo || s.tipo === 'otro') ? ' selected' : ''}>Otro</option>
-          </select>
-          ${approved ? `<button class="iconbtn" data-rev="${s.id}">Quitar acceso</button>` : `<button class="iconbtn" data-app="${s.id}" style="border-color:var(--secondary);color:var(--primary)">Aprobar</button>`}`;
+          </select>`;
         list.appendChild(row);
       });
-      list.querySelectorAll('[data-app]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.app, 'approved'); const x = studs.find(p => p.id === b.dataset.app); if (x) { x.status = 'approved'; x.role = 'member'; } draw(); });
-      list.querySelectorAll('[data-rev]').forEach(b => b.onclick = async () => { await Store.students.setStatus(b.dataset.rev, 'pending'); const x = studs.find(p => p.id === b.dataset.rev); if (x) x.status = 'pending'; draw(); });
       list.querySelectorAll('[data-tipo]').forEach(sel => sel.onchange = async () => { await Store.students.setTipo(sel.dataset.tipo, sel.value); const x = studs.find(p => p.id === sel.dataset.tipo); if (x) x.tipo = sel.value; });
     }
     $('#stuSearch').oninput = (e) => { q = e.target.value.toLowerCase().trim(); draw(); };

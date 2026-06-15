@@ -26,8 +26,8 @@
       const a = item && item.assigned_to;
       return Array.isArray(a) ? a.includes(u.id) : a === u.id;        // arreglo (varios) o legacy (uno)
     }
-    const approved = u.role === 'member' && u.status === 'approved';
-    if (!approved) return false;
+    // Sin paso de aprobación: cualquier miembro registrado ve el contenido de su grupo.
+    if (u.role !== 'member' && u.role !== 'admin') return false;
     if (visibility === 'members') return true;
     if (visibility === 'docentes') return u.tipo === 'docente';
     if (visibility === 'estudiantes') return u.tipo === 'estudiante';
@@ -114,7 +114,7 @@
       async signUp(email, pw, name, tipo) {
         const d = db();
         if (d.profiles.find(x => x.email.toLowerCase() === (email || '').toLowerCase())) return { error: 'Ese correo ya está registrado.' };
-        const p = { id: uid(), email, full_name: name || email, role: 'member', status: 'pending', tipo: tipo || 'otro', avatar_url: '', created_at: new Date().toISOString().slice(0, 10) };
+        const p = { id: uid(), email, full_name: name || email, role: 'member', status: 'approved', tipo: tipo || 'otro', avatar_url: '', created_at: new Date().toISOString().slice(0, 10) };
         d.profiles.push(p);
         try { write(d); } catch (e) { return { error: 'No se pudo crear la cuenta (espacio del navegador).' }; }
         currentUser = { ...p }; localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); notify();
