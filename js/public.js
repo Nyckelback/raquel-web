@@ -203,7 +203,7 @@
     }
     // Invitación a quien aún no se ha registrado (los registrados ya ven lo de su grupo al instante).
     if (!u) {
-      html += gate('Crea tu cuenta gratis para leer también los cuentos y artículos reservados para docentes y estudiantes. Es gratis y entras al instante.');
+      html += gate('Crea tu cuenta gratis para leer también los cuentos y artículos reservados para docentes y estudiantes. Es gratis y con tu propio correo.');
     }
     box.innerHTML = html;
   }
@@ -231,7 +231,7 @@
     if (normal.length) html += `<div class="downloads" id="resGrid">${normal.map(resItem).join('')}</div>`;
     // 3) Invitación honesta a quien aún no se ha registrado.
     if (!u) {
-      html += gate('Todo esto es abierto y gratis, sin registrarte. Crea tu cuenta gratis si además quieres el material reservado para docentes y estudiantes — es gratis y entras al instante.');
+      html += gate('Todo esto es abierto y gratis, sin registrarte. Crea tu cuenta gratis si además quieres el material reservado para docentes y estudiantes — es gratis y con tu propio correo.');
     }
     box.innerHTML = html;
     // Filtrar por tema sin recargar
