@@ -52,12 +52,12 @@
   const LOCKSM = '<svg style="width:16px;height:16px;vertical-align:-2px;color:var(--secondary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 2.7-4.5 6-4.5s6 1.5 6 4.5"/><path d="M16 6a2.5 2.5 0 0 1 0 5"/></svg>';
   const head = (t) => `<div style="max-width:62ch;margin:46px 0 18px"><h2 style="font-size:clamp(1.5rem,3vw,2rem)">${t}</h2></div>`;
   function gate(msg) {
-    return `<div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>${esc(msg)}</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div>`;
+    return `<div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>${esc(msg)}</p><a class="btn btn-primary" href="entrar" style="margin-top:14px">Entrar</a></div>`;
   }
   function postCard(p) {
     const ph = p.cover_url ? `<div class="ph" style="background-image:url('${esc(p.cover_url)}')"></div>` : `<div class="ph"></div>`;
     const badge = p.visibility === 'members' ? '<span class="badge-mem">Comunidad</span>' : '';
-    return `<a class="post-card" href="articulo.html?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
+    return `<a class="post-card" href="articulo?id=${encodeURIComponent(p.slug || p.id)}">${ph}<div class="pb"><h3>${esc(p.title)}</h3><p>${esc(p.excerpt || '')}</p><div class="meta">${p.type === 'cuento' ? 'Cuento' : 'Artículo'} ${badge}</div></div></a>`;
   }
   // Reconoce un link de Google Drive y arma las 3 variantes (ver, vista previa embebida, descarga directa)
   function driveInfo(raw) {
@@ -265,15 +265,15 @@
     await Store.ready;
     const id = new URLSearchParams(location.search).get('id');
     const p = id ? await Store.posts.get(id) : null;
-    if (!p || !p.published) { box.innerHTML = '<div class="container" style="max-width:60ch"><p class="note">No encontramos esta publicación.</p><p style="margin-top:14px"><a class="btn btn-light" href="cuentos.html">← Ver cuentos</a></p></div>'; return; }
+    if (!p || !p.published) { box.innerHTML = '<div class="container" style="max-width:60ch"><p class="note">No encontramos esta publicación.</p><p style="margin-top:14px"><a class="btn btn-light" href="cuentos">← Ver cuentos</a></p></div>'; return; }
     document.title = p.title + ' · La Oda de las Charamuscas';
     if (!Store.canSee(p.visibility)) {
-      box.innerHTML = `<div class="container" style="max-width:60ch"><p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,2.8rem);margin-bottom:20px">${esc(p.title)}</h1><div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>Crea tu cuenta gratis para leer esta publicación.</p><a class="btn btn-primary" href="entrar.html" style="margin-top:14px">Entrar</a></div></div>`;
+      box.innerHTML = `<div class="container" style="max-width:60ch"><p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,2.8rem);margin-bottom:20px">${esc(p.title)}</h1><div class="gate">${LOCK}<h3 style="margin-bottom:6px">Contenido para la comunidad</h3><p>Crea tu cuenta gratis para leer esta publicación.</p><a class="btn btn-primary" href="entrar" style="margin-top:14px">Entrar</a></div></div>`;
       return;
     }
     const cover = p.cover_url ? `<img class="cover-hero" src="${esc(p.cover_url)}" alt="">` : '';
     const video = p.video_url ? ytEmbed(p.video_url) : '';
-    box.innerHTML = `<div class="container" style="max-width:64ch">${cover}<p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,3rem);margin-bottom:18px">${esc(p.title)}</h1><div class="prose">${video}${blocksToHtml(p.content_json)}</div><p style="margin-top:34px"><a class="btn btn-light" href="cuentos.html">← Volver a cuentos</a></p></div>`;
+    box.innerHTML = `<div class="container" style="max-width:64ch">${cover}<p class="eyebrow">${p.type === 'cuento' ? 'Cuento' : 'Artículo'}</p><h1 style="font-size:clamp(2rem,5vw,3rem);margin-bottom:18px">${esc(p.title)}</h1><div class="prose">${video}${blocksToHtml(p.content_json)}</div><p style="margin-top:34px"><a class="btn btn-light" href="cuentos">← Volver a cuentos</a></p></div>`;
   }
 
   window.ElNido = { ytEmbed, blocksToHtml };

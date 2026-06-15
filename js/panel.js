@@ -11,11 +11,11 @@
 
   await Store.ready;
   const user = Store.auth.user();
-  if (!user || user.role !== 'admin') { location.href = 'entrar.html'; return; }
+  if (!user || user.role !== 'admin') { location.href = 'entrar'; return; }
   $('#loading').style.display = 'none';
   $('#app').style.display = '';   // deja que el CSS decida (grid en desktop, block en móvil)
 
-  $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = 'index.html'; };
+  $('#logout').onclick = async () => { await Store.auth.signOut(); location.href = '/'; };
 
   /* ---- navegación entre secciones ---- */
   const segs = { resumen: renderResumen, perfil: renderPerfil, pagina: renderPagina, posts: renderPosts, recursos: renderRecursos, galeria: renderGaleria, estudiantes: renderEstudiantes, mensajes: renderMensajes };

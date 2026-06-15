@@ -9,10 +9,10 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=28">
+  <link rel="stylesheet" href="css/styles.css?v=29">
 </head>
 <body data-page="entrar">
-  <div data-include="partials/header.html?v=28"></div>
+  <div data-include="partials/header.html?v=29"></div>
 
   <section class="section">
     <div class="container auth-wrap">
@@ -55,11 +55,11 @@
     </div>
   </section>
 
-  <div data-include="partials/footer.html?v=28"></div>
+  <div data-include="partials/footer.html?v=29"></div>
 
-  <script src="js/config.js?v=28"></script>
-  <script src="js/store.js?v=28"></script>
-  <script src="js/main.js?v=28"></script>
+  <script src="js/config.js?v=29"></script>
+  <script src="js/store.js?v=29"></script>
+  <script src="js/main.js?v=29"></script>
   <script>
     (async () => {
       await Store.ready;
@@ -99,21 +99,21 @@
             + '<p style="margin:0 0 6px">Te enviamos un enlace de confirmación a:</p>'
             + '<p style="margin:0 0 14px;font-weight:600;color:var(--ink)">' + esc(email) + '</p>'
             + '<p style="margin:0 0 20px;color:var(--muted);font-size:.9rem;line-height:1.5">Ábrelo y haz clic en <strong>“Confirmar mi cuenta”</strong>.<br>Si no lo ves, revisa la carpeta de spam.</p>'
-            + '<a href="index.html" class="btn btn-light" style="justify-content:center">← Volver al inicio</a>'
+            + '<a href="/" class="btn btn-light" style="justify-content:center">← Volver al inicio</a>'
             + '</div>';
         } else {
           msg.innerHTML = '<div style="text-align:center">'
             + '<strong style="font-size:1.2rem;display:block;margin-bottom:10px;color:var(--ink)">✓ ¡Cuenta creada!</strong>'
             + '<p style="margin:0 0 18px">Ya tienes acceso a todo lo abierto y al material de tu grupo.</p>'
-            + '<a href="index.html" class="btn btn-primary" style="justify-content:center">Ir al inicio →</a>'
+            + '<a href="/" class="btn btn-primary" style="justify-content:center">Ir al inicio →</a>'
             + '</div>';
         }
       });
 
       if (Store.mode === 'demo') {
         $('demoBox').style.display = 'block';
-        $('demoAdmin').addEventListener('click', async () => { await Store.auth.demoLogin('admin'); location.href = 'panel.html'; });
-        $('demoStu').addEventListener('click', async () => { await Store.auth.demoLogin('member'); location.href = 'index.html'; });
+        $('demoAdmin').addEventListener('click', async () => { await Store.auth.demoLogin('admin'); location.href = 'panel'; });
+        $('demoStu').addEventListener('click', async () => { await Store.auth.demoLogin('member'); location.href = '/'; });
       }
     })();
   </script>
