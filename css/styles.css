@@ -363,7 +363,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .acct-menu .who span{font-size:.75rem;color:var(--muted)}
 
 /* ---------- Gate de miembros ---------- */
-.gate{background:var(--surface);border:1px dashed var(--secondary);border-radius:var(--radius);padding:28px;text-align:center;color:var(--text)}
+.gate{background:var(--surface);border:1px dashed var(--secondary);border-radius:var(--radius);padding:28px;text-align:center;color:var(--text);margin-top:26px}
 .gate svg{width:34px;height:34px;color:var(--secondary);margin-bottom:8px}
 .badge-mem{font-size:.68rem;letter-spacing:.04em;color:#536245;background:var(--acc-asesorias);padding:3px 9px;border-radius:20px;vertical-align:middle}
 
