@@ -12,8 +12,8 @@ window.ELNIDO_CONFIG = {
   SUPABASE_URL: "https://howzobocntcchvjuescg.supabase.co",   // ← Project URL ✓
   SUPABASE_ANON_KEY: "sb_publishable_4JZJ21c724IGvTo00lbuIw_MlO-dLna",   // Publishable key ✓
 
-  SITE_URL: "https://nyckelback.github.io/raquel-web",
-  ADMIN_EMAIL: "contacto@elnido.com",   // correo donde llegan los avisos
+  SITE_URL: "https://laodadelascharamuscas.com",
+  ADMIN_EMAIL: "raquelsofiadiazgonzalez1979@gmail.com",   // correo donde llegan los avisos
 
   // Avisos al correo (opcional). Crea cuenta gratis en https://emailjs.com
   EMAILJS: { PUBLIC_KEY: "", SERVICE_ID: "", TEMPLATE_ID: "" },

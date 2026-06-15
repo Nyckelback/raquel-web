@@ -194,9 +194,14 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .dl-item .dl-meta{flex:1}
 .dl-item .dl-meta strong{font-family:var(--serif);font-weight:500;font-size:1.05rem;color:var(--ink);display:block}
 .dl-item .dl-meta span{font-size:.84rem;color:var(--muted);line-height:1.4;display:block;margin-top:3px}
-.dl-tag{font-size:.72rem;letter-spacing:.04em;color:var(--eyebrow);background:var(--chip);padding:3px 10px;border-radius:20px;white-space:nowrap}
+/* Etiqueta de tema = pill DELINEADA (se lee como rótulo, no como botón). */
+.dl-tag{font-size:.72rem;letter-spacing:.03em;color:var(--eyebrow);background:transparent;border:1px solid var(--secondary);padding:3px 11px;border-radius:20px;white-space:nowrap}
 .dl-card{display:block}
 .dl-acts{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+/* Acciones (Descargar / Abrir / Vista previa) = botón de relleno cálido y tenue → se ve claramente
+   que es un botón (antes era casi blanco sobre la tarjeta y se perdía). */
+.dl-acts .btn{background:var(--chip);color:var(--eyebrow);border-color:#EAD3BE;font-weight:500}
+.dl-acts .btn:hover{background:#F1D9C0;border-color:var(--secondary)}
 .dl-prevbox{margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:#fff}
 .dl-prevbox iframe{width:100%;height:520px;border:0;display:block}
 @media(max-width:560px){
@@ -224,7 +229,7 @@ h1,h2,h3,h4{font-family:var(--serif);color:var(--ink);font-weight:400;line-heigh
 .foryou-head .foryou-ico svg{width:20px;height:20px}
 .foryou .foryou-note{font-size:.88rem;color:var(--text);margin:0 0 14px;line-height:1.55}
 .foryou .dl-item{background:#fff;border-color:var(--primary)}
-.foryou .dl-tag{background:var(--primary);color:#fff}
+.foryou .dl-tag{background:var(--primary);color:#fff;border-color:transparent}
 .res-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .rchip{font-family:var(--sans);font-size:.84rem;color:var(--ink);background:var(--surface);border:1px solid var(--border);padding:7px 15px;border-radius:20px;cursor:pointer;transition:all .15s}
 .rchip:hover{border-color:var(--secondary)}
